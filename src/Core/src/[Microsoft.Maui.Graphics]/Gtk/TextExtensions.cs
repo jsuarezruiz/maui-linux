@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.Maui.Graphics.Native.Gtk
 {
@@ -18,17 +19,19 @@ namespace Microsoft.Maui.Graphics.Native.Gtk
 			layout.GetLineReadonly(0).GetExtents(ref inkRect, ref logicalRect);
 			lineHeigh += (scaled ? logicalRect.Height.ScaledFromPango() : logicalRect.Height);
 			var fact = 1f;
+
 			if (layout.LineSpacing > 0)
 			{
 				fact = layout.LineSpacing;
 			}
 
-			return lineHeigh * baseline + lineHeigh + (lineHeigh * fact * (numLines-1));
+			return lineHeigh * baseline + lineHeigh + (lineHeigh * fact * (numLines - 1));
 		}
 
 		public static (int width, int height) GetPixelSize(this Pango.Layout layout, string text, double desiredSize = -1d, bool heightForWidth = true)
 		{
 			desiredSize = double.IsInfinity(desiredSize) ? -1 : desiredSize;
+
 			if (desiredSize > 0)
 			{
 				if (heightForWidth)
@@ -49,6 +52,38 @@ namespace Microsoft.Maui.Graphics.Native.Gtk
 
 		public static double ScaledFromPango(this double it)
 			=> Math.Ceiling(it / Pango.Scale.PangoScale);
+
+		static readonly Dictionary<TextDecorations, Pango.AttrList> _attrLists = new();
+
+		public static Pango.AttrList? AttrListFor(this TextDecorations it)
+		{
+
+			if (TextDecorations.None == it)
+			{
+				return null;
+			}
+
+			if (_attrLists.TryGetValue(it, out var l))
+				return l;
+
+			l = new Pango.AttrList();
+
+			if (it.HasFlag(TextDecorations.Underline))
+			{
+
+				l.Insert(new Pango.AttrUnderline(Pango.Underline.Single));
+			}
+
+			if (it.HasFlag(TextDecorations.Strikethrough))
+			{
+				l.Insert(new Pango.AttrStrikethrough(true));
+
+			}
+
+			_attrLists[it] = l;
+
+			return l;
+		}
 
 	}
 

@@ -69,6 +69,8 @@ namespace Microsoft.Maui.Handlers
 				layout.Ellipsize = nativeView.Ellipsize;
 				layout.Spacing = nativeView.Layout.Spacing;
 
+				layout.Attributes = nativeView.Attributes;
+
 				if (virtualView.LineHeight > 1)
 					layout.LineSpacing = (float)virtualView.LineHeight;
 				else
@@ -98,6 +100,9 @@ namespace Microsoft.Maui.Handlers
 				{
 					height = Math.Min((int)lh.ScaledFromPango(), height);
 				}
+
+				layout.Attributes = null;
+
 			}
 
 			width += hMargin;
@@ -152,9 +157,13 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCharacterSpacing(LabelHandler handler, ILabel label)
 		{ }
 
-		[MissingMapper]
 		public static void MapTextDecorations(LabelHandler handler, ILabel label)
-		{ }
+		{
+			if (handler.NativeView is not { } nativeView)
+				return;
+
+			nativeView.Attributes = label.TextDecorations.AttrListFor();
+		}
 
 		public static void MapLineHeight(LabelHandler handler, ILabel label)
 		{

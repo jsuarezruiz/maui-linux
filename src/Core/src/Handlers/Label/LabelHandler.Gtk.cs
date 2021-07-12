@@ -21,12 +21,11 @@ namespace Microsoft.Maui.Handlers
 		// https://developer.gnome.org/gtk3/stable/GtkLabel.html
 		protected override GtkLabel CreateNativeView()
 		{
-			return new GtkLabel()
+			return new()
 			{
 				LineWrap = true,
 				Halign = Align.Fill,
 				Xalign = 0,
-				MaxWidthChars = 1,
 			};
 		}
 

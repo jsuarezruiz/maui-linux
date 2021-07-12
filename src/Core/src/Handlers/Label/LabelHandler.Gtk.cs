@@ -5,12 +5,11 @@ using Gtk;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Native.Gtk;
 using Pango;
-using Context = Cairo.Context;
 
 namespace Microsoft.Maui.Handlers
 {
 
-	public partial class LabelHandler : ViewHandler<ILabel, GtkLabel>
+	public partial class LabelHandler : ViewHandler<ILabel, LabelView>
 	{
 
 		private static Microsoft.Maui.Graphics.Native.Gtk.TextLayout? _textLayout;
@@ -19,7 +18,7 @@ namespace Microsoft.Maui.Handlers
 			Microsoft.Maui.Graphics.Native.Gtk.NativeGraphicsService.Instance.SharedContext) { HeightForWidth = true };
 
 		// https://developer.gnome.org/gtk3/stable/GtkLabel.html
-		protected override GtkLabel CreateNativeView()
+		protected override LabelView CreateNativeView()
 		{
 			return new()
 			{
@@ -183,21 +182,6 @@ namespace Microsoft.Maui.Handlers
 				nativeView.LineHeight = (float)label.LineHeight;
 			}
 
-		}
-
-	}
-
-	public class GtkLabel : Label
-	{
-
-		public float LineHeight { get; set; }
-
-		protected override bool OnDrawn(Context cr)
-		{
-			if (LineHeight > 1)
-				Layout.LineSpacing = LineHeight;
-
-			return base.OnDrawn(cr);
 		}
 
 	}

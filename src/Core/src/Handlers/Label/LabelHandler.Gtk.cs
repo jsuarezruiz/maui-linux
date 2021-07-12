@@ -5,11 +5,12 @@ using Gtk;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Native.Gtk;
 using Pango;
+using Context = Cairo.Context;
 
 namespace Microsoft.Maui.Handlers
 {
 
-	public partial class LabelHandler : ViewHandler<ILabel, Label>
+	public partial class LabelHandler : ViewHandler<ILabel, GtkLabel>
 	{
 
 		private static Microsoft.Maui.Graphics.Native.Gtk.TextLayout? _textLayout;
@@ -18,14 +19,14 @@ namespace Microsoft.Maui.Handlers
 			Microsoft.Maui.Graphics.Native.Gtk.NativeGraphicsService.Instance.SharedContext) { HeightForWidth = true };
 
 		// https://developer.gnome.org/gtk3/stable/GtkLabel.html
-		protected override Label CreateNativeView()
+		protected override GtkLabel CreateNativeView()
 		{
-			return new Label()
+			return new GtkLabel()
 			{
 				LineWrap = true,
 				Halign = Align.Fill,
 				Xalign = 0,
-				MaxWidthChars = 1
+				MaxWidthChars = 1,
 			};
 		}
 
@@ -157,7 +158,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextDecorations(LabelHandler handler, ILabel label)
 		{ }
 
-		[MissingMapper]
 		public static void MapLineHeight(LabelHandler handler, ILabel label)
 		{
 			// there is no LineHeight for label in gtk3:
@@ -176,13 +176,29 @@ namespace Microsoft.Maui.Handlers
 
 				// no effect: https://developer.gnome.org/gtk3/stable/GtkLabel.html#gtk-label-get-layout
 				// The label is free to recreate its layout at any time, so it should be considered read-only
-				nativeView.Layout.LineSpacing = (float)label.LineHeight;
+				// nativeView.Layout.LineSpacing = (float)label.LineHeight;
 
 				// not working: exception thrown: 'line-height' is not a valid property name
 				// nativeView.SetStyleValue($"{(int)label.LineHeight}","line-height");
 
+				nativeView.LineHeight = (float)label.LineHeight;
 			}
 
+		}
+
+	}
+
+	public class GtkLabel : Label
+	{
+
+		public float LineHeight { get; set; }
+
+		protected override bool OnDrawn(Context cr)
+		{
+			if (LineHeight > 1)
+				Layout.LineSpacing = LineHeight;
+
+			return base.OnDrawn(cr);
 		}
 
 	}

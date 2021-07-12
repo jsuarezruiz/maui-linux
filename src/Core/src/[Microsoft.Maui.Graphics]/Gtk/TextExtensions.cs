@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Graphics.Native.Gtk
 				fact = layout.LineSpacing;
 			}
 
-			return lineHeigh * baseline + (lineHeigh * fact * numLines - 1);
+			return lineHeigh * baseline + lineHeigh + (lineHeigh * fact * (numLines-1));
 		}
 
 		public static (int width, int height) GetPixelSize(this Pango.Layout layout, string text, double desiredSize = -1d, bool heightForWidth = true)

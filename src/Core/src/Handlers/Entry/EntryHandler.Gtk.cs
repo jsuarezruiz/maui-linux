@@ -110,8 +110,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsPassword(EntryHandler handler, IEntry entry)
 		{
-			if (handler.NativeView != null && entry.IsPassword)
-				handler.NativeView.InputPurpose = InputPurpose.Password;
+			if (handler.NativeView is { } nativeView)
+			{
+				nativeView.Visibility = !entry.IsPassword;
+			}
 		}
 
 		public static void MapHorizontalTextAlignment(EntryHandler handler, IEntry entry)
@@ -119,13 +121,11 @@ namespace Microsoft.Maui.Handlers
 			if (handler.NativeView is { } nativeView)
 				nativeView.Alignment = entry.HorizontalTextAlignment.ToXyAlign();
 		}
-		
+
 		[MissingMapper]
 		public static void MapVerticalTextAlignment(EntryHandler handler, IEntry entry)
-		{
+		{ }
 
-		}
-		
 		[MissingMapper]
 		public static void MapIsTextPredictionEnabled(EntryHandler handler, IEntry entry) { }
 

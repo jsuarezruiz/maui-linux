@@ -122,7 +122,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapVerticalTextAlignment(LabelHandler handler, ILabel label)
 		{
 			handler.NativeView?.UpdateVerticalTextAlignment(label);
-
 		}
 
 		public static void MapLineBreakMode(LabelHandler handler, ILabel label)

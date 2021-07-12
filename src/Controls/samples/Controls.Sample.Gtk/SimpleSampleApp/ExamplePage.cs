@@ -130,6 +130,7 @@ namespace Maui.SimpleSampleApp
 			{
 				Text = "a label",
 				HorizontalTextAlignment = TextAlignment.Center,
+				VerticalTextAlignment = TextAlignment.Center
 
 			};
 
@@ -392,7 +393,8 @@ namespace Maui.SimpleSampleApp
 			horizontalStack.Add(new Label
 			{
 				Text = "And these buttons are in a HorizontalStackLayout",
-				VerticalOptions = LayoutOptions.Center
+				VerticalOptions = LayoutOptions.Center,
+				HorizontalTextAlignment = TextAlignment.End
 			});
 
 			verticalStack.Add(horizontalStack);
@@ -701,7 +703,7 @@ namespace Maui.SimpleSampleApp
 			var bottomLeft = new Label
 			{
 				Text = "Bottom Left",
-				BackgroundColor = Colors.Lavender
+				BackgroundColor = Colors.Lavender,
 			};
 
 			layout.Add(bottomLeft);
@@ -711,7 +713,9 @@ namespace Maui.SimpleSampleApp
 			{
 				Text = "Top Right",
 				BackgroundColor = Colors.Orange,
-				TextColor = Colors.Chocolate
+				TextColor = Colors.Chocolate,
+				VerticalTextAlignment = TextAlignment.Start,
+				HorizontalTextAlignment = TextAlignment.End
 			};
 
 			layout.Add(topRight);
@@ -720,7 +724,10 @@ namespace Maui.SimpleSampleApp
 			var bottomRight = new Label
 			{
 				Text = "Bottom Right",
-				BackgroundColor = Colors.MediumPurple
+				BackgroundColor = Colors.MediumPurple,
+				VerticalTextAlignment = TextAlignment.End,
+				HorizontalTextAlignment = TextAlignment.End
+
 			};
 
 			layout.Add(bottomRight);

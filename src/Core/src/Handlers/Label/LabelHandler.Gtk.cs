@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.WebSockets;
 using System.Runtime.InteropServices.ComTypes;
 using Gtk;
 using Microsoft.Maui.Graphics;
@@ -68,6 +69,14 @@ namespace Microsoft.Maui.Handlers
 				layout.Width = -1;
 				layout.Ellipsize = nativeView.Ellipsize;
 				layout.Spacing = nativeView.Layout.Spacing;
+
+				if (virtualView.LineHeight > 1)
+					layout.LineSpacing = (float)virtualView.LineHeight;
+				else
+				{
+					layout.LineSpacing = 0;
+				}
+
 				layout.SetText(nativeView.Text);
 
 				if (!heightConstrained)
@@ -161,9 +170,18 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			if (label.LineHeight > 1)
+			{
 				// should be: https://developer.gnome.org/pango/1.46/pango-Layout-Objects.html#pango-layout-set-line-spacing
 				// see: https://github.com/GtkSharp/GtkSharp/issues/258
-				nativeView.Layout.Spacing = (int)label.LineHeight.ScaledToPango();
+
+				// no effect: https://developer.gnome.org/gtk3/stable/GtkLabel.html#gtk-label-get-layout
+				// The label is free to recreate its layout at any time, so it should be considered read-only
+				nativeView.Layout.LineSpacing = (float)label.LineHeight;
+
+				// not working: exception thrown: 'line-height' is not a valid property name
+				// nativeView.SetStyleValue($"{(int)label.LineHeight}","line-height");
+
+			}
 
 		}
 

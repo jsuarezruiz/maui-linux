@@ -17,8 +17,13 @@ namespace Microsoft.Maui.Graphics.Native.Gtk
 			var baseline = metrics.Ascent / (double)(metrics.Ascent + metrics.Descent);
 			layout.GetLineReadonly(0).GetExtents(ref inkRect, ref logicalRect);
 			lineHeigh += (scaled ? logicalRect.Height.ScaledFromPango() : logicalRect.Height);
+			var fact = 1f;
+			if (layout.LineSpacing > 0)
+			{
+				fact = layout.LineSpacing;
+			}
 
-			return lineHeigh * baseline + (lineHeigh * numLines - 1);
+			return lineHeigh * baseline + (lineHeigh * fact * numLines - 1);
 		}
 
 		public static (int width, int height) GetPixelSize(this Pango.Layout layout, string text, double desiredSize = -1d, bool heightForWidth = true)

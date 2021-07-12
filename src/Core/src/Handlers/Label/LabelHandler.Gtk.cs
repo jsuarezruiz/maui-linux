@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Net.WebSockets;
-using System.Runtime.InteropServices.ComTypes;
 using Gtk;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Native.Gtk;
-using Pango;
 
 namespace Microsoft.Maui.Handlers
 {

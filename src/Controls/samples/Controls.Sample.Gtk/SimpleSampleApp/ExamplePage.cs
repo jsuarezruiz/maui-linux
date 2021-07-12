@@ -131,7 +131,6 @@ namespace Maui.SimpleSampleApp
 				Text = "a label",
 				HorizontalTextAlignment = TextAlignment.Center,
 				VerticalTextAlignment = TextAlignment.Center
-
 			};
 
 			verticalStack.Add(label);
@@ -318,8 +317,8 @@ namespace Maui.SimpleSampleApp
 
 			var underlineLabel = new Label
 			{
-				Text = "underline",
-				TextDecorations = TextDecorations.Underline
+				Text = (TextDecorations.Underline | TextDecorations.Strikethrough).ToString(),
+				TextDecorations = TextDecorations.Underline | TextDecorations.Strikethrough
 			};
 
 			verticalStack.Add(underlineLabel);
@@ -384,7 +383,22 @@ namespace Maui.SimpleSampleApp
 				TextColor = Colors.Green,
 				Text = "Hello I'm a button",
 				BackgroundColor = Colors.Purple,
-				Margin = new Thickness(12)
+				Margin = new Thickness(12),
+			};
+
+			button2.Clicked += (s, e) =>
+			{
+				if (underlineLabel.TextDecorations.HasFlag(TextDecorations.Underline))
+				{
+					underlineLabel.TextDecorations = TextDecorations.Strikethrough;
+					underlineLabel.Text = nameof(TextDecorations.Strikethrough);
+				}
+				else if (underlineLabel.TextDecorations.HasFlag(TextDecorations.Strikethrough))
+				{
+					underlineLabel.TextDecorations = TextDecorations.Underline;
+					underlineLabel.Text = nameof(TextDecorations.Underline);
+				}
+
 			};
 
 			horizontalStack.Add(button);
@@ -727,7 +741,6 @@ namespace Maui.SimpleSampleApp
 				BackgroundColor = Colors.MediumPurple,
 				VerticalTextAlignment = TextAlignment.End,
 				HorizontalTextAlignment = TextAlignment.End
-
 			};
 
 			layout.Add(bottomRight);

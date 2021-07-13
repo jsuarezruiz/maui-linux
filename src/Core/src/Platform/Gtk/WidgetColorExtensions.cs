@@ -14,19 +14,27 @@ namespace Microsoft.Maui
 			if (color == null)
 				return;
 
-			widget.SetBackgroundColor(Gtk.StateType.Normal, color);
+			widget.SetBackgroundColor(Gtk.StateFlags.Normal, color);
 		}
 
-		public static void SetBackgroundColor(this Gtk.Widget widget, Gtk.StateType state, Graphics.Color color)
+		public static void SetBackgroundColor(this Gtk.Widget widget, Gtk.StateType state, Graphics.Color? color)
 		{
+			if (color == null)
+				return;
+
 			widget.SetBackgroundColor(state.ToStateFlag(), color);
 		}
 
-		public static void SetBackgroundColor(this Gtk.Widget widget, Gtk.StateFlags state, Graphics.Color color)
+		public static void SetBackgroundColor(this Gtk.Widget widget, Gtk.StateFlags state, Graphics.Color? color)
 		{
-			var nativeColor = color.ToGdkRgba();
+			if (color == null)
+				return;
 
-			widget.SetColor(nativeColor, "background-color");
+			var cssFlags = state.CssState();
+			var mainNode = widget.CssMainNode();
+			if (cssFlags != null) mainNode = $"{mainNode}:{cssFlags}";
+			widget.SetStyleColor(color, mainNode, "background-color");
+
 		}
 
 		public static Graphics.Color GetBackgroundColor(this Gtk.Widget widget)

@@ -1,5 +1,6 @@
 ﻿using System;
 using Gtk;
+using Microsoft.Maui.Graphics.Native.Gtk;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -166,8 +167,13 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapClearButtonVisibility(EntryHandler handler, IEntry entry) { }
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(EntryHandler handler, IEntry entry) { }
+		public static void MapCharacterSpacing(EntryHandler handler, IEntry entry)
+		{
+			if (handler.NativeView is not { } nativeView)
+				return;
+
+			nativeView.Attributes = nativeView.Attributes.AttrListFor(entry.CharacterSpacing);
+		}
 
 		[MissingMapper]
 		public static void MapKeyboard(EntryHandler handler, IEntry entry)

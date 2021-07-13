@@ -53,20 +53,10 @@ namespace Microsoft.Maui.Graphics.Native.Gtk
 		public static double ScaledFromPango(this double it)
 			=> Math.Ceiling(it / Pango.Scale.PangoScale);
 
-		static readonly Dictionary<TextDecorations, Pango.AttrList> _attrLists = new();
-
-		public static Pango.AttrList? AttrListFor(this TextDecorations it)
+		public static Pango.AttrList? AddAttrFor(this Pango.AttrList? l, TextDecorations it)
 		{
-
-			if (TextDecorations.None == it)
-			{
-				return null;
-			}
-
-			if (_attrLists.TryGetValue(it, out var l))
+			if (l == null)
 				return l;
-
-			l = new Pango.AttrList();
 
 			if (it.HasFlag(TextDecorations.Underline))
 			{
@@ -80,9 +70,102 @@ namespace Microsoft.Maui.Graphics.Native.Gtk
 
 			}
 
-			_attrLists[it] = l;
+			return l;
+		}
+
+		public static Pango.AttrList? AddAttrFor(this Pango.AttrList? list, int spacing)
+		{
+			if (spacing <= 1.ScaledToPango())
+				return list;
+
+			list?.Insert(new Pango.AttrLetterSpacing(spacing));
+
+			return list;
+		}
+
+		public static Pango.AttrList? AttrListFor(this Pango.AttrList? list, TextDecorations decorations, double letterspacing)
+		{
+			var spacing = letterspacing.ScaledToPango();
+
+			if (decorations == TextDecorations.None && letterspacing <= 1)
+				return null;
+
+			var l = new Pango.AttrList();
+
+			if (decorations != TextDecorations.None)
+				l.AddAttrFor(decorations);
+
+			if (letterspacing > 1)
+				l.AddAttrFor(spacing);
 
 			return l;
+
+		}
+
+		/// <summary>
+		/// Use this only if there are no other attributes to set
+		/// </summary>
+		/// <param name="list"></param>
+		/// <param name="letterspacing"></param>
+		/// <returns></returns>
+		public static Pango.AttrList? AttrListFor(this Pango.AttrList? list, double letterspacing)
+		{
+			var spacing = letterspacing.ScaledToPango();
+
+			// var l = list?.Filter(f => f.Type != Pango.AttrType.LetterSpacing);
+
+			if (letterspacing <= 1)
+				return list;
+
+			// list ??= new Pango.AttrList();
+
+			var l = new Pango.AttrList();
+
+			l.AddAttrFor(spacing);
+
+			return l;
+
+		}
+
+		static readonly Dictionary<TextDecorations, Pango.AttrList> _attrLists = new();
+
+		[Obsolete("not working with spacing")]
+		public static Pango.AttrList? DefaultAttrListFor(this TextDecorations decorations)
+		{
+
+			if (TextDecorations.None == decorations)
+			{
+				return null;
+			}
+
+			if (_attrLists.TryGetValue(decorations, out var l))
+				return l;
+
+			l = new Pango.AttrList();
+
+			l.AddAttrFor(decorations);
+
+			_attrLists[decorations] = l;
+
+			return l;
+		}
+
+		[Obsolete("not working together with letterspacing")]
+		public static Pango.AttrList? AttrListFor(this Pango.AttrList? list, TextDecorations decorations)
+		{
+
+			// something wrong with Filter; iterater is null then
+			var l = list?.Filter(f => f.Type != Pango.AttrType.Underline || f.Type != Pango.AttrType.Strikethrough);
+
+			if (decorations == TextDecorations.None)
+				return list;
+
+			list ??= new Pango.AttrList();
+
+			list.AddAttrFor(decorations);
+
+			return list;
+
 		}
 
 	}

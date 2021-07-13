@@ -386,20 +386,7 @@ namespace Maui.SimpleSampleApp
 				Margin = new Thickness(12),
 			};
 
-			button2.Clicked += (s, e) =>
-			{
-				if (underlineLabel.TextDecorations.HasFlag(TextDecorations.Underline))
-				{
-					underlineLabel.TextDecorations = TextDecorations.Strikethrough;
-					underlineLabel.Text = nameof(TextDecorations.Strikethrough);
-				}
-				else if (underlineLabel.TextDecorations.HasFlag(TextDecorations.Strikethrough))
-				{
-					underlineLabel.TextDecorations = TextDecorations.Underline;
-					underlineLabel.Text = nameof(TextDecorations.Underline);
-				}
 
-			};
 
 			horizontalStack.Add(button);
 			horizontalStack.Add(button2);
@@ -504,12 +491,32 @@ namespace Maui.SimpleSampleApp
 				Placeholder = "MaxLength text"
 			});
 
-			verticalStack.Add(new Entry
+			var spacingEntry = new Entry
 			{
 				Text = "This should be text with character spacing",
 				CharacterSpacing = 10
-			});
+			};
 
+			verticalStack.Add(spacingEntry);
+
+			button2.Clicked += (s, e) =>
+			{
+				if (underlineLabel.TextDecorations.HasFlag(TextDecorations.Underline))
+				{
+					underlineLabel.TextDecorations = TextDecorations.Strikethrough;
+					underlineLabel.Text = nameof(TextDecorations.Strikethrough);
+					underlineLabel.CharacterSpacing = 2;
+				}
+				else if (underlineLabel.TextDecorations.HasFlag(TextDecorations.Strikethrough))
+				{
+					underlineLabel.TextDecorations = TextDecorations.Underline;
+					underlineLabel.Text = nameof(TextDecorations.Underline);
+					underlineLabel.CharacterSpacing = 1;
+				}
+
+				spacingEntry.CharacterSpacing = spacingEntry.CharacterSpacing == 10 ? 5 : 10;
+			};
+			
 			verticalStack.Add(new Entry
 			{
 				Keyboard = Keyboard.Numeric,

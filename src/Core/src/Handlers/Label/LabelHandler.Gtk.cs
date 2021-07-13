@@ -150,16 +150,20 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		[MissingMapper]
 		public static void MapCharacterSpacing(LabelHandler handler, ILabel label)
-		{ }
+		{
+			if (handler.NativeView is not { } nativeView)
+				return;
+
+			nativeView.Attributes = nativeView.Attributes.AttrListFor(label.TextDecorations,label.CharacterSpacing);
+		}
 
 		public static void MapTextDecorations(LabelHandler handler, ILabel label)
 		{
 			if (handler.NativeView is not { } nativeView)
 				return;
 
-			nativeView.Attributes = label.TextDecorations.AttrListFor();
+			nativeView.Attributes = nativeView.Attributes.AttrListFor(label.TextDecorations,label.CharacterSpacing);
 		}
 
 		public static void MapLineHeight(LabelHandler handler, ILabel label)

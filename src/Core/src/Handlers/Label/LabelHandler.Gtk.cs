@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Handlers
 			if (handler.NativeView is not { } nativeView)
 				return;
 
-			nativeView.Attributes = nativeView.Attributes.AttrListFor(label.TextDecorations,label.CharacterSpacing);
+			nativeView.Attributes = nativeView.Attributes.AttrListFor(label.TextDecorations, label.CharacterSpacing);
 		}
 
 		public static void MapTextDecorations(LabelHandler handler, ILabel label)
@@ -163,7 +163,7 @@ namespace Microsoft.Maui.Handlers
 			if (handler.NativeView is not { } nativeView)
 				return;
 
-			nativeView.Attributes = nativeView.Attributes.AttrListFor(label.TextDecorations,label.CharacterSpacing);
+			nativeView.Attributes = nativeView.Attributes.AttrListFor(label.TextDecorations, label.CharacterSpacing);
 		}
 
 		public static void MapLineHeight(LabelHandler handler, ILabel label)

@@ -112,12 +112,8 @@ namespace Microsoft.Maui.Graphics.Native.Gtk
 		{
 			var spacing = letterspacing.ScaledToPango();
 
-			// var l = list?.Filter(f => f.Type != Pango.AttrType.LetterSpacing);
-
 			if (letterspacing <= 1)
 				return list;
-
-			// list ??= new Pango.AttrList();
 
 			var l = new Pango.AttrList();
 

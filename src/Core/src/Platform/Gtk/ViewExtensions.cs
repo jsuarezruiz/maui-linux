@@ -114,7 +114,10 @@ namespace Microsoft.Maui
 			nativeView.TooltipText = semantics.Hint;
 		}
 
-		public static void UpdateOpacity(this Widget nativeView, IView view) { }
+		public static void UpdateOpacity(this Widget nativeView, IView view)
+		{
+			nativeView.Opacity = view.Opacity;
+		}
 
 		public static void UpdateClip(this WrapperView nativeView, IView view)
 		{

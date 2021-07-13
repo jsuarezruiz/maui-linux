@@ -133,7 +133,7 @@ namespace Microsoft.Maui
 				case Gtk.StateType.Focused:
 					return Gtk.StateFlags.Active;
 				case Gtk.StateType.Inconsistent:
-					return Gtk.StateFlags.Normal;
+					return Gtk.StateFlags.Inconsistent;
 				case Gtk.StateType.Selected:
 					return Gtk.StateFlags.Selected;
 			}

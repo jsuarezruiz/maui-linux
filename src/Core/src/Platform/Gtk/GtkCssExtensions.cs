@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Gtk;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Native.Gtk;
 using Pango;
@@ -72,6 +73,26 @@ namespace Microsoft.Maui
 
 		public static void SetStyleValue(this Gtk.Widget widget, string value, string attr, string? subNode = null)
 			=> widget.SetStyleValueNode(value, widget.CssMainNode(), attr, subNode);
+
+		public static string? CssState(this Gtk.StateFlags it) =>
+			it switch
+			{
+				StateFlags.Normal => null,
+				StateFlags.Active => "active",
+				StateFlags.Prelight => "hover",
+				StateFlags.Selected => "selected",
+				StateFlags.Insensitive => "disabled",
+				StateFlags.Inconsistent => "inconsistent",
+				StateFlags.Focused => "focused",
+				StateFlags.Backdrop => "backdrop",
+				StateFlags.DirLtr => "dir(ltr)",
+				StateFlags.DirRtl => "dir(rtl)",
+				StateFlags.Link => "link",
+				StateFlags.Visited => "visited",
+				StateFlags.Checked => "checked",
+				StateFlags.DropActive => "drop(active)",
+				_ => throw new ArgumentOutOfRangeException(nameof(it), it, null)
+			};
 
 	}
 

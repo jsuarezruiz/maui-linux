@@ -107,7 +107,12 @@ namespace Microsoft.Maui
 			nativeView?.UpdateVisibility(view.Visibility);
 
 		public static void UpdateSemantics(this Widget nativeView, IView view)
-		{ }
+		{
+			if (view.Semantics is not { } semantics)
+				return;
+
+			nativeView.TooltipText = semantics.Hint;
+		}
 
 		public static void UpdateOpacity(this Widget nativeView, IView view) { }
 
@@ -117,8 +122,8 @@ namespace Microsoft.Maui
 		}
 
 		public static void UpdateClip(this Widget nativeView, IView view)
-		{
-		}
+		{ }
+
 	}
 
 }

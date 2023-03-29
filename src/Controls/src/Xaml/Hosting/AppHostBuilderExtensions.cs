@@ -24,6 +24,7 @@ using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 #elif GTK
+using Microsoft.Maui.Graphics.Platform.Gtk;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Platform.Gtk;
 #endif
@@ -181,6 +182,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MauiControlsInitializer>());
 #endif
 			builder.RemapForControls();
+			AddDefaultMappings();
 
 			return builder;
 		}
@@ -248,6 +250,35 @@ namespace Microsoft.Maui.Controls.Hosting
 			WebView.RemapForControls();
 
 			return builder;
+		}
+
+		internal static void AddDefaultMappings()
+		{
+#if GTK
+			ContentViewHandler.Mapper.AppendToMapping(
+				"BorderColor",
+				(IContentViewHandler handler, IContentView view) =>
+				{
+					if (view is Frame frame)
+					{
+						Microsoft.Maui.Platform.ContentView contentView = (Microsoft.Maui.Platform.ContentView)handler.PlatformView;
+						contentView.SetStyleValueNode($"1px solid {frame.BorderColor.ToGdkRgba().ToString()}", contentView.CssMainNode(), "border");
+					}
+				}
+			);
+
+			ContentViewHandler.Mapper.AppendToMapping(
+				"CornerRadius",
+				(IContentViewHandler handler, IContentView view) =>
+				{
+					if (view is Frame frame)
+					{
+						Microsoft.Maui.Platform.ContentView contentView = (Microsoft.Maui.Platform.ContentView)handler.PlatformView;
+						contentView.SetStyleValueNode($"{frame.CornerRadius:f}px", contentView.CssMainNode(), "border-radius");
+					}
+				}
+			);
+#endif
 		}
 	}
 }

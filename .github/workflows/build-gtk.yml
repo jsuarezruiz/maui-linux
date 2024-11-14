@@ -36,7 +36,9 @@ jobs:
             dotnet build -c Release Microsoft.Maui.Gtk.slnf
             
       - name: Pack
-        run: dotnet pack ./src/Core/src/Core.csproj --no-build --no-restore
+        run: |
+            dotnet pack src/Controls/src/Core/Controls.Core.csproj --no-build --no-restore
+            dotnet pack src/Core/src/Core.csproj --no-build --no-restore
 
       - name: Publish
         run: dotnet nuget push **/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate

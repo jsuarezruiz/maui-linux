@@ -5,7 +5,7 @@
     <MSBuildWarningsAsMessages Condition=" '$(TargetPlatformIdentifier)' == 'Android' ">$(MSBuildWarningsAsMessages);XA4218</MSBuildWarningsAsMessages>
   </PropertyGroup>
 
-  <Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Core.BundledVersions.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)GtkSharp.Maui.Core.BundledVersions.targets" />
 
   <!--
     This double check seems excessive, but importing the WinUI.targets when building for windows is not

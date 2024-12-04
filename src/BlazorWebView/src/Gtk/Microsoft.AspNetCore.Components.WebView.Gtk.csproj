@@ -4,6 +4,7 @@
     <TargetFrameworks>$(_MauiDotNetTfm)-gtk</TargetFrameworks>
     <SupportedOSPlatformVersion>3.24</SupportedOSPlatformVersion>
     <Description>Build Gtk applications with Blazor and WebKit</Description>
+    <PackageId>GtkSharp.Maui.AspNetCore.Components.WebView.Gtk</PackageId>
     <DefineConstants>$(DefineConstants);WEBKIT_GTK</DefineConstants>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
-  <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\..\BlazorWebView\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.props" />
+  <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\..\BlazorWebView\src\Maui\build\GtkSharp.Maui.AspNetCore.Components.WebView.props" />
 
   <PropertyGroup>
     <TargetFrameworks>$(MauiPlatforms);$(_MauiDotNetTfm)</TargetFrameworks>
@@ -93,7 +93,7 @@
     <Content Remove="Properties\launchSettings.json" />
   </ItemGroup>
 
-  <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\..\BlazorWebView\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.targets" />
+  <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\..\BlazorWebView\src\Maui\build\GtkSharp.Maui.AspNetCore.Components.WebView.targets" />
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 

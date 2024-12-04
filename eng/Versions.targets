@@ -48,6 +48,7 @@
   </Target>
   <Target Name="SetVersions" BeforeTargets="$(SetVersionsBefore)" DependsOnTargets="$(SetVersionsDependsOn)" Returns="$(Version)">
     <PropertyGroup>
+      <GitTag Condition="$(GITHUB_REF_TYPE) == 'tag'">$(GITHUB_REF_NAME)</GitTag>
       <SemVerLabel>$([System.Text.RegularExpressions.Regex]::Match($(GitTag), $(RegexTag)))</SemVerLabel>
       <GitDefaultBranch>main</GitDefaultBranch>
       <GitIgnoreBranchVersion>true</GitIgnoreBranchVersion>
@@ -64,13 +65,17 @@
 
       <VersionMetadata Condition="'$(GitCommit)' != ''"  Include="sha.$(GitCommit)"/>
 
-      <VersionMetadata Condition="$(CI)"
+      <VersionMetadata Condition="$(CI) and '$(BUILD_BUILDID)' != ''"
                        Include="azdo.$(BUILD_BUILDID)"/>
     </ItemGroup>
 
+    <Error Text="Git tag ($(GitTag)) != version extracted from GitInfo.txt ($(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch))"
+           Condition="'$(GitTag)' != '' and '$(GitTag)' != '$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)'">
+    </Error>
+    
     <PropertyGroup>
       <VersionMetadataLabel>@(VersionMetadata -> '%(Identity)', '-')</VersionMetadataLabel>
-      <VersionMetadataPlusLabel Condition="'$(VersionMetadataLabel)' != ''">+$(VersionMetadataLabel)</VersionMetadataPlusLabel>
+      <VersionMetadataPlusLabel Condition="'$(VersionMetadataLabel)' != ''">0+$(VersionMetadataLabel)</VersionMetadataPlusLabel>
       <Version>$(GitBaseVersionMajor).$(GitBaseVersionMinor).$(GitBaseVersionPatch)</Version>
       <PackageReferenceVersion>$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)$(GitSemVerDashLabel)</PackageReferenceVersion>
       <PackageReferenceVersion Condition="$(CI) and '$(GitSemVerDashLabel)' != ''">$(GitSemVerMajor).$(GitSemVerMinor).$(GitBaseVersionPatch)$(GitSemVerDashLabel).$(BUILDVERSION)</PackageReferenceVersion>
@@ -79,6 +84,11 @@
       <VSComponentVersion Condition="$(CI) and '$(GitSemVerDashLabel)' != ''">$(GitSemVerMajor).$(GitSemVerMinor).$(GitBaseVersionPatch).$(BUILDVERSION)</VSComponentVersion>
       <VSComponentVersion Condition="$(CI) and '$(GitSemVerDashLabel)' == ''">$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch).0</VSComponentVersion>
       <PackageVersion>$(PackageReferenceVersion)$(VersionMetadataPlusLabel)</PackageVersion>
+      <!-- Generate stable release package for tags -->
+      <PackageVersion Condition=" '$(GitTag)' != '' ">$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)</PackageVersion>
+      <!-- Pre-release version for other cases -->
+      <PreReleaseVersionSuffix>$([System.IO.File]::ReadAllText($(MSBuildThisFileDirectory)../PreReleaseVersionSuffix.txt))</PreReleaseVersionSuffix>
+      <PackageVersion Condition="$(CI) and '$(GitTag)' == '' ">$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)$(PreReleaseVersionSuffix)</PackageVersion>
     </PropertyGroup>
 
     <PropertyGroup>

@@ -1,0 +1,21 @@
+{
+  "solution": {
+    "path": "Microsoft.Maui.sln",
+    "projects": [
+      "src\\BlazorWebView\\src\\Gtk\\Microsoft.AspNetCore.Components.WebView.Gtk.csproj",
+      "src\\BlazorWebView\\src\\Maui\\Microsoft.AspNetCore.Components.WebView.Maui.csproj",
+      "src\\Compatibility\\Core\\src\\Compatibility.csproj",
+      "src\\Controls\\src\\Build.Tasks\\Controls.Build.Tasks.csproj",
+      "src\\Controls\\src\\Core\\Controls.Core.csproj",
+      "src\\Controls\\src\\Xaml\\Controls.Xaml.csproj",
+      "src\\Core\\src\\Core.csproj",
+      "src\\Essentials\\src\\Essentials.csproj",
+      "src\\Graphics\\src\\Graphics.Gtk\\Graphics.Gtk.csproj",
+      "src\\Graphics\\src\\Graphics.Skia.GtkSharp\\Graphics.Skia.GtkSharp.csproj",
+      "src\\Graphics\\src\\Graphics.Skia\\Graphics.Skia.csproj",
+      "src\\Graphics\\src\\Graphics\\Graphics.csproj",
+      "src\\Graphics\\src\\Text.Markdig\\Graphics.Text.Markdig.csproj",
+      "src\\SingleProject\\Resizetizer\\src\\Resizetizer.csproj"
+    ]
+  }
+}

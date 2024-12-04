@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<PackageId>Microsoft.Maui.Controls.Build.Tasks</PackageId>
+		<PackageId>GtkSharp.Maui.Controls.Build.Tasks</PackageId>
 		<AssemblyName>Microsoft.Maui.Controls.Build.Tasks</AssemblyName>
 		<RootNamespace>Microsoft.Maui.Controls.Build.Tasks</RootNamespace>
 		<TargetFramework>netstandard2.0</TargetFramework>
@@ -18,8 +18,8 @@
 	<PropertyGroup>
 		<!-- NuGet package information -->
 		<IsPackable>true</IsPackable>
-		<PackageId>Microsoft.Maui.Controls.Build.Tasks</PackageId>
-		<Description>.NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. This package only contains the MSBuild tasks and other tooling. Please install the Microsoft.Maui.Controls package to start using .NET MAUI.</Description>
+		<PackageId>GtkSharp.Maui.Controls.Build.Tasks</PackageId>
+		<Description>(MauiLinux is a fork of MAUI) .NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. This package only contains the MSBuild tasks and other tooling. Please install the Microsoft.Maui.Controls package to start using .NET MAUI.</Description>
 	</PropertyGroup>
 
 	<ItemGroup>

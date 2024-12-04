@@ -31,11 +31,21 @@ jobs:
             chmod 764 $WORKLOAD_MANIFEST_DIR/*
             dotnet workload search
             dotnet workload install gtk --skip-manifest-update
+      - name: Generate pre-release version suffix
+        run: dotnet fsi nugetPreRelease.fsx "" > PreReleaseVersionSuffix.txt
       - name: Build MAUI
         run: |
             sed -i 's/_IncludeAndroid>true/_IncludeAndroid>/g' Directory.Build.Override.props
             dotnet build Microsoft.Maui.BuildTasks.slnf
-            dotnet build Microsoft.Maui.Gtk.slnf
+            dotnet build -c Release Microsoft.Maui.Gtk.slnf
+      - name: Pack MAUI
+        run: dotnet pack Microsoft.Maui.Gtk.Packages.slnf
+      - name: Upload binaries to nuget (if tag or main branch, and nugetKey is present)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUGET_KEY: ${{ secrets.NUGET_KEY }}
+        if: ${{ env.NUGET_KEY != ''  && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) }}
+        run: dotnet nuget push **/*.nupkg --api-key ${{ secrets.NUGET_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate        
 
   dotnet-format:
     needs: build_and_test

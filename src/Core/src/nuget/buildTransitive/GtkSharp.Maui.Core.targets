@@ -1,0 +1,13 @@
+<Project>
+
+  <PropertyGroup>
+    <UsingMicrosoftMauiCoreSdk>true</UsingMicrosoftMauiCoreSdk>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)GtkSharp.Maui.Core.Before.targets" />
+
+  <PropertyGroup>
+    <AfterMicrosoftNETSdkTargets>$(AfterMicrosoftNETSdkTargets);$(MSBuildThisFileDirectory)GtkSharp.Maui.Core.After.targets</AfterMicrosoftNETSdkTargets>
+  </PropertyGroup>
+
+</Project>

@@ -24,9 +24,9 @@
   <PropertyGroup>
     <!-- NuGet package information -->
     <IsPackable>True</IsPackable>
-    <PackageId>Microsoft.Maui.Controls.Compatibility</PackageId>
+    <PackageId>GtkSharp.Maui.Controls.Compatibility</PackageId>
     <PackageTags>$(DefaultPackageTags);compatibility;xamarin.forms;migration</PackageTags>
-    <Description>Compatibility APIs and objects for .NET Multi-platform App UI (.NET MAUI) apps. This package contains a collection of APIs and views that allow for easier migration from Xamarin.Forms.</Description>
+    <Description>(MauiLinux is a fork of MAUI) Compatibility APIs and objects for .NET Multi-platform App UI (.NET MAUI) apps. This package contains a collection of APIs and views that allow for easier migration from Xamarin.Forms.</Description>
   </PropertyGroup>
 
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
@@ -46,7 +46,7 @@
     <Content Remove="WPF\**" />
     <Page Remove="**\WPF\**\*.xaml" />
     <MauiXaml Remove="**\WPF\**\*.xaml" />
-    <Compile Include ="..\..\..\Core\src\VisualDiagnostics\BootstrapHelper.cs">
+    <Compile Include="..\..\..\Core\src\VisualDiagnostics\BootstrapHelper.cs">
         <Link>Windows\BootstrapHelper.cs</Link>
     </Compile>
   </ItemGroup>

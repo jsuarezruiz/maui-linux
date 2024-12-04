@@ -14,8 +14,8 @@
   <PropertyGroup>
     <!-- NuGet package information -->
     <IsPackable>true</IsPackable>
-    <PackageId>Microsoft.Maui.Core</PackageId>
-    <Description>.NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. This package only contains the core objects used by .NET MAUI. Please install the Microsoft.Maui.Controls package to start using .NET MAUI.</Description>
+    <PackageId>GtkSharp.Maui.Core</PackageId>
+    <Description>(MauiLinux is a fork of MAUI) .NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. This package only contains the core objects used by .NET MAUI. Please install the Microsoft.Maui.Controls package to start using .NET MAUI.</Description>
   </PropertyGroup>
 
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
@@ -64,7 +64,7 @@
   <Target Name="_CopyToBuildTasksDir" AfterTargets="Build">
     <ItemGroup>
       <_CopyItems Include="nuget\buildTransitive\**" Exclude="nuget\**\*.in.*" />
-      <_CopyItems Include="$(IntermediateOutputPath)Microsoft.Maui.Core.BundledVersions.targets" />
+      <_CopyItems Include="$(IntermediateOutputPath)GtkSharp.Maui.Core.BundledVersions.targets" />
     </ItemGroup>
     <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)%(RecursiveDir)" ContinueOnError="true" Retries="0" />
   </Target>
@@ -78,30 +78,30 @@
   <Target Name="_GenerateBundledVersions"
     BeforeTargets="Build;AssignTargetPaths"
     DependsOnTargets="SetVersions"
-    Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)eng\Versions.props;nuget\buildTransitive\Microsoft.Maui.Core.BundledVersions.in.targets"
-    Outputs="$(IntermediateOutputPath)Microsoft.Maui.Core.BundledVersions.targets">
+    Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)eng\Versions.props;nuget\buildTransitive\GtkSharp.Maui.Core.BundledVersions.in.targets"
+    Outputs="$(IntermediateOutputPath)GtkSharp.Maui.Core.BundledVersions.targets">
     <ItemGroup>
       <_ValuesToReplace Include="VERSION" PropertyName="PackageReferenceVersion" />
     </ItemGroup>
     <Copy
-      SourceFiles="nuget\buildTransitive\Microsoft.Maui.Core.BundledVersions.in.targets"
-      DestinationFiles="$(IntermediateOutputPath)Microsoft.Maui.Core.BundledVersions.targets"
+      SourceFiles="nuget\buildTransitive\GtkSharp.Maui.Core.BundledVersions.in.targets"
+      DestinationFiles="$(IntermediateOutputPath)GtkSharp.Maui.Core.BundledVersions.targets"
       />
     <ReplaceText
-      Input="$(IntermediateOutputPath)Microsoft.Maui.Core.BundledVersions.targets"
-      Output="$(IntermediateOutputPath)Microsoft.Maui.Core.BundledVersions.targets"
+      Input="$(IntermediateOutputPath)GtkSharp.Maui.Core.BundledVersions.targets"
+      Output="$(IntermediateOutputPath)GtkSharp.Maui.Core.BundledVersions.targets"
       OldValue="@%(_ValuesToReplace.Identity)@"
       NewValue="$(%(_ValuesToReplace.PropertyName))"
       />
     <ItemGroup>
       <None
-        Include="$(IntermediateOutputPath)Microsoft.Maui.Core.BundledVersions.targets"
-        Link="nuget\buildTransitive\Microsoft.Maui.Core.BundledVersions.targets"
+        Include="$(IntermediateOutputPath)GtkSharp.Maui.Core.BundledVersions.targets"
+        Link="nuget\buildTransitive\GtkSharp.Maui.Core.BundledVersions.targets"
         Pack="true"
         PackagePath="buildTransitive"
         Visible="false"
         />
-      <FileWrites Include="$(IntermediateOutputPath)Microsoft.Maui.Core.BundledVersions.targets" />
+      <FileWrites Include="$(IntermediateOutputPath)GtkSharp.Maui.Core.BundledVersions.targets" />
     </ItemGroup>
   </Target>
 

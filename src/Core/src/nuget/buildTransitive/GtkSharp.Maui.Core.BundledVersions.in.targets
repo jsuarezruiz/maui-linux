@@ -2,7 +2,7 @@
 
   <!-- .NET MAUI version for telemetry: this is the installed nuget in use, not the workload version -->
   <ItemGroup>
-    <ProjectCapability Include="Microsoft.Maui.Core.Version.@VERSION@" />
+    <ProjectCapability Include="GtkSharp.Maui.Core.Version.@VERSION@" />
   </ItemGroup>
 
 </Project>

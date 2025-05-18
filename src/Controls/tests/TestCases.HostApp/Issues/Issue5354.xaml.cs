@@ -1,4 +1,9 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Xaml;
 
 
 namespace Maui.Controls.Sample.Issues
@@ -47,7 +52,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-
+	[Preserve(AllMembers = true)]
 	public class ViewModel5354
 	{
 		public ObservableCollection<Model5354> Items { get; set; }
@@ -73,7 +78,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-
+	[Preserve(AllMembers = true)]
 	public class Model5354
 	{
 		public string Text { get; set; }

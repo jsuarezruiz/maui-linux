@@ -1,11 +1,9 @@
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.TestCases.Tests.Issues
+namespace Microsoft.Maui.AppiumTests.Issues
 {
-	[Category(UITestCategories.SoftInput)]
 	public class HideSoftInputOnTappedPageTests : _IssuesUITest
 	{
 		public HideSoftInputOnTappedPageTests(TestDevice device) : base(device) { }
@@ -18,9 +16,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[TestCase("Entry", true)]
 		[TestCase("Editor", true)]
 		[TestCase("SearchBar", true)]
-		[FailsOnWindowsWhenRunningOnXamarinUITest("Test ignored on Windows")]
 		public void HideSoftInputOnTappedPageTest(string control, bool hideOnTapped)
 		{
+			this.IgnoreIfPlatforms(new[]
+			{
+				TestDevice.Windows
+			});
+
 			App.WaitForElement("HideSoftInputOnTappedTrue");
 
 			if (this.Device == TestDevice.Mac)
@@ -45,10 +47,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				App.WaitForElement(control);
 				App.Click(control);
 
-				ClassicAssert.IsTrue(App.IsFocused(control));
+				Assert.IsTrue(App.IsFocused(control));
 
 				App.Click("EmptySpace");
-				ClassicAssert.AreEqual(!hideOnTapped, App.IsFocused(control));
+				Assert.AreEqual(!hideOnTapped, App.IsFocused(control));
 			}
 			finally
 			{
@@ -64,17 +66,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 					App.DismissKeyboard();
 
 				if (hideOnTapped)
-					App.Tap("HideSoftInputOnTappedTrue");
+					App.Click("HideSoftInputOnTappedTrue");
 				else
-					App.Tap("HideSoftInputOnTappedFalse");
+					App.Click("HideSoftInputOnTappedFalse");
 
-				App.WaitForElement(control);
-				App.Tap(control);
+				App.Click(control);
 
-				ClassicAssert.True(App.IsKeyboardShown());
+				Assert.True(App.IsKeyboardShown());
 
-				App.Tap("EmptySpace");
-				ClassicAssert.AreEqual(!hideOnTapped, App.IsKeyboardShown());
+				App.Click("EmptySpace");
+				Assert.AreEqual(!hideOnTapped, App.IsKeyboardShown());
 			}
 			finally
 			{
@@ -84,9 +85,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[FailsOnWindowsWhenRunningOnXamarinUITest("Test ignored on Windows")]
 		public void TogglingHideSoftInputOnTapped()
 		{
+			this.IgnoreIfPlatforms(new[]
+			{
+				TestDevice.Windows
+			});
+
 			App.WaitForElement("HideSoftInputOnTappedFalse");
 
 			if (this.Device == TestDevice.Mac)
@@ -109,14 +114,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				for (int i = 0; i < 2; i++)
 				{
 					App.Click("HideKeyboardWhenTappingPage");
-					ClassicAssert.True(App.IsFocused("HideKeyboardWhenTappingPage"));
+					Assert.True(App.IsFocused("HideKeyboardWhenTappingPage"));
 					App.Click("EmptySpace");
-					ClassicAssert.AreEqual(false, App.IsFocused("HideKeyboardWhenTappingPage"));
+					Assert.AreEqual(false, App.IsFocused("HideKeyboardWhenTappingPage"));
 
 					App.Click("DontHideKeyboardWhenTappingPage");
-					ClassicAssert.True(App.IsFocused("DontHideKeyboardWhenTappingPage"));
+					Assert.True(App.IsFocused("DontHideKeyboardWhenTappingPage"));
 					App.Click("EmptySpace");
-					ClassicAssert.AreEqual(true, App.IsFocused("DontHideKeyboardWhenTappingPage"));
+					Assert.AreEqual(true, App.IsFocused("DontHideKeyboardWhenTappingPage"));
 				}
 			}
 			finally
@@ -132,21 +137,20 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				if (App.IsKeyboardShown())
 					App.DismissKeyboard();
 
-				App.Tap("HideSoftInputOnTappedFalse");
+				App.Click("HideSoftInputOnTappedFalse");
 
 				// Switch between enabling/disabling feature
 				for (int i = 0; i < 2; i++)
 				{
-					App.WaitForElement("HideKeyboardWhenTappingPage");
-					App.Tap("HideKeyboardWhenTappingPage");
-					ClassicAssert.True(App.IsKeyboardShown());
-					App.Tap("EmptySpace");
-					ClassicAssert.AreEqual(false, App.IsKeyboardShown());
+					App.Click("HideKeyboardWhenTappingPage");
+					Assert.True(App.IsKeyboardShown());
+					App.Click("EmptySpace");
+					Assert.AreEqual(false, App.IsKeyboardShown());
 
-					App.Tap("DontHideKeyboardWhenTappingPage");
-					ClassicAssert.True(App.IsKeyboardShown());
-					App.Tap("EmptySpace");
-					ClassicAssert.AreEqual(true, App.IsKeyboardShown());
+					App.Click("DontHideKeyboardWhenTappingPage");
+					Assert.True(App.IsKeyboardShown());
+					App.Click("EmptySpace");
+					Assert.AreEqual(true, App.IsKeyboardShown());
 				}
 			}
 			finally

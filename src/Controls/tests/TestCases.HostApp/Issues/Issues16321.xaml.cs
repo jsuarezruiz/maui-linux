@@ -1,5 +1,9 @@
-﻿using Microsoft.Maui.Platform;
-
+﻿using System;
+using System.Linq;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Platform;
 
 #if IOS
 using UIKit;
@@ -8,18 +12,11 @@ using CoreGraphics;
 
 namespace Maui.Controls.Sample.Issues
 {
+	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 16321, "Alerts Open on top of current presented view", PlatformAffected.All)]
-	public class Issue16321NavPage : NavigationPage
-	{
-		public Issue16321NavPage() : base(new Issue16321())
-		{
-
-		}
-	}
-
 	public partial class Issue16321 : ContentPage
 	{
-		public Issue16321() : base()
+		public Issue16321()
 		{
 			InitializeComponent();
 		}
@@ -33,18 +30,8 @@ namespace Maui.Controls.Sample.Issues
 			await Navigation.PopModalAsync();
 		}
 
-		async void OpenActionSheetWithModals(System.Object sender, System.EventArgs e)
-		{
-			await Navigation.PushModalAsync(new ContentPage());
-			await Navigation.PushModalAsync(new ContentPage());
-			await this.DisplayActionSheet("hello", "message", "Cancel", "Option 1", "Option 2");
-			await Navigation.PopModalAsync();
-			await Navigation.PopModalAsync();
-		}
-
 #if IOS
-
-		async void OpenPrompt(System.Object sender, System.EventArgs e, Func<Page, Task> promptAction)
+		async void OpenAlertWithNewUIWindow(System.Object sender, System.EventArgs e)
 		{
 			var uIWindow = new UIWindow();
 			var keyWindow = (this.Window.Handler.PlatformView as UIWindow);
@@ -64,7 +51,7 @@ namespace Maui.Controls.Sample.Issues
 			popupVC.ModalTransitionStyle = UIModalTransitionStyle.CoverVertical;
 			await uIWindow.RootViewController.PresentViewControllerAsync(popupVC, false);
 
-			await promptAction.Invoke(page);
+			await page.DisplayAlert("hello", "message", "Cancel");
 
 			var rvc = uIWindow.RootViewController;
 
@@ -79,29 +66,7 @@ namespace Maui.Controls.Sample.Issues
 			keyWindow.WindowLevel = UIWindowLevel.Normal;
 			this.RemoveLogicalChild(page);
 		}
-
-		void OpenAlertWithNewUIWindow(System.Object sender, System.EventArgs e)
-		{
-			OpenPrompt(sender, e, (page) =>
-			{
-				return page.DisplayAlert("hello", "message", "Cancel");
-			});
-		}
-
-
-		void OpenActionSheetWithNewUIWindow(System.Object sender, System.EventArgs e)
-		{
-			OpenPrompt(sender, e, (page) =>
-			{
-				return page.DisplayActionSheet("hello", "message", "Cancel", "Option 1", "Option 2");
-			});
-		}
 #else
-		async void OpenActionSheetWithNewUIWindow(System.Object sender, System.EventArgs e)
-		{
-			await this.DisplayActionSheet("hello", "message", "Cancel", "Option 1", "Option 2");
-		}
-
 		async void OpenAlertWithNewUIWindow(System.Object sender, System.EventArgs e)
 		{
 			await this.DisplayAlert("hello", "message", "Cancel");

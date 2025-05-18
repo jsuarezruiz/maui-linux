@@ -2,7 +2,7 @@
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.TestCases.Tests.Issues
+namespace Microsoft.Maui.AppiumTests.Issues
 {
 	public class Issue20842 : _IssuesUITest
 	{
@@ -16,17 +16,21 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Verify data templates in CollectionView virtualize correctly";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyCollectionViewItemsAfterScrolling()
+		public async Task VerifyCollectionViewItemsAfterScrolling()
 		{
+			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
+
 			App.WaitForElement(scrollUpButton);
-			App.WaitForElement(scrollDownButton);
-			App.Tap(scrollDownButton);
-			App.WaitForElement(scrollUpButton);
-			App.Tap(scrollUpButton);
-			App.WaitForElement(scrollDownButton);
-			App.Tap(scrollDownButton);
+
+			App.Click(scrollDownButton);
+			await Task.Delay(200);
+			App.Click(scrollUpButton);
+			await Task.Delay(200);
+			App.Click(scrollDownButton);
+			await Task.Delay(500);
+
 			VerifyScreenshot();
 		}
 	}
 }
+

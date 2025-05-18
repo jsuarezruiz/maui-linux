@@ -11,8 +11,20 @@ namespace Microsoft.Maui.Benchmarks
 	{
 		readonly Border[] _views =
 		[
-			new Border(), new Border(), new Border(), new Border(), new Border(), new Border(), new Border(),
-			new Border(), new Border(), new Border(), new Border(), new Border(), new Border(), new Border()
+			new Border(),
+			new Border(),
+			new Border(),
+			new Border(),
+			new Border(),
+			new Border(),
+			new Border(),
+			new Border(),
+			new Border(),
+			new Border(),
+			new Border(),
+			new Border(),
+			new Border(),
+			new Border()
 		];
 
 		const int Iterations = 100;

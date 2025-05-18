@@ -51,7 +51,7 @@ namespace Maui.Controls.Sample
 				ValidateScopes = true,
 			}));
 
-#if __ANDROID__ || __IOS__
+#if __ANDROID__ || __IOS__ || GTK
 			appBuilder.UseMauiMaps();
 #endif
 			appBuilder.UseMauiApp<XamlApp>();

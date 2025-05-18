@@ -21,6 +21,9 @@ using ParentView = Microsoft.UI.Xaml.DependencyObject;
 #elif TIZEN
 using PlatformView = Tizen.NUI.BaseComponents.View;
 using ParentView = Tizen.NUI.BaseComponents.View;
+#elif GTK
+using PlatformView = Gtk.Widget;
+using ParentView = Gtk.Widget;
 #else
 using PlatformView = System.Object;
 using ParentView = System.Object;
@@ -28,9 +31,7 @@ using ParentView = System.Object;
 
 namespace Microsoft.Maui.Platform
 {
-	/// <summary>
-	/// Extension methods for <see cref="IView"/>s, providing animatable scaling, rotation, and layout functions.
-	/// </summary>
+	/// <include file="../../docs/Microsoft.Maui/ViewExtensions.xml" path="Type[@FullName='Microsoft.Maui.ViewExtensions']/Docs/*" />
 	public static partial class ViewExtensions
 	{
 		internal static Vector3 ExtractPosition(this Matrix4x4 matrix) => matrix.Translation;
@@ -42,14 +43,8 @@ namespace Microsoft.Maui.Platform
 		internal static double ExtractAngleInDegrees(this Matrix4x4 matrix) => ExtractAngleInRadians(matrix) * 180 / Math.PI;
 
 
-		/// <summary>
-		/// Gets the platform-specific view handler for the specified view.
-		/// </summary>
-		/// <param name="view">The view to get the handler for.</param>
-		/// <param name="context">The Maui context used to create the handler.</param>
-		/// <returns>The platform-specific view handler.</returns>
-		public static IPlatformViewHandler ToHandler(this IView view, IMauiContext context) =>
-			(IPlatformViewHandler)ElementExtensions.ToHandler(view, context);
+		public static IViewHandler ToHandler(this IView view, IMauiContext context) =>
+			(IViewHandler)ElementExtensions.ToHandler(view, context);
 
 		internal static T? GetParentOfType<T>(this ParentView? view)
 #if ANDROID
@@ -233,7 +228,7 @@ namespace Microsoft.Maui.Platform
 				PlatformView? child;
 				while ((child = descendantView?.GetChildAt<PlatformView>(i)) is not null)
 				{
-#if TIZEN
+#if TIZEN || GTK
 					// I had to add this check for Tizen to compile.
 					// I think Tizen isn't accounting for the null check
 					// in the while loop correctly

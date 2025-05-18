@@ -1,8 +1,33 @@
-﻿using System.Collections.ObjectModel;
+﻿
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.None, 10234, "CarouselView disposed on iOS when navigating back in Shell", PlatformAffected.iOS)]
+	public class Issue10234Test : ContentPage
+	{
+		public Issue10234Test()
+		{
+			Content = new VerticalStackLayout()
+			{
+				Children =
+				{
+					new Button()
+					{
+						Text = "Go To Test",
+						AutomationId = "GoToTest",
+						Command = new Command(() => Application.Current.MainPage = new Issue10234())
+					}
+				}
+			};
+		}
+	}
+
 	public class Issue10234 : Shell
 	{
 		public Issue10234()
@@ -78,7 +103,7 @@ namespace Maui.Controls.Sample.Issues
 						() =>
 						{
 							var image = new Image();
-							image.SetBinding(Image.SourceProperty, new Binding(nameof(PhotoItem.Image)));
+							image.SetBinding(Image.SourceProperty, new Binding("."));
 							return image;
 						}
 					)
@@ -100,18 +125,19 @@ namespace Maui.Controls.Sample.Issues
 				Content = grid;
 			}
 
-			public ObservableCollection<PhotoItem> Items { get; set; }
+			public ObservableCollection<string> Items { get; set; }
 
 			public void LoadData()
 			{
-				var images = new List<PhotoItem>();
+				var images = new List<string>();
 
-				for (int i = 0; i < 4; i++)
-				{
-					images.Add(new PhotoItem { Image = "oasis.jpg", Title = $"Title {i}" });
-				}
+				images.Add("oasis.jpg");
+				images.Add("dotnet_bot.jpg");
+				images.Add("shopping_cart.jpg");
+				images.Add("groceries.png");
 
-				Items = new ObservableCollection<PhotoItem>(images);
+
+				Items = new ObservableCollection<string>(images);
 				Photos.ItemsSource = Items;
 			}
 
@@ -126,12 +152,6 @@ namespace Maui.Controls.Sample.Issues
 			{
 				get; set;
 			}
-		}
-
-		class PhotoItem
-		{
-			public string Image { get; set; }
-			public string Title { get; set; }
 		}
 	}
 }

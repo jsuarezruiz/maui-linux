@@ -29,9 +29,7 @@ namespace Microsoft.Maui
 		{
 			try
 			{
-				Action? disposeWrapper = dispose != null
-					? dispose.Run
-					: null;
+				Action? disposeWrapper = dispose?.Run;
 
 				var result = success?.BooleanValue() == true
 					? OnSuccess(drawable, disposeWrapper)

@@ -1,11 +1,10 @@
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Related Issue : https://github.com/dotnet/maui/issues/27955, https://github.com/dotnet/maui/issues/27946
-using Microsoft.Maui.TestCases.Tests;
+﻿using Microsoft.Maui.AppiumTests;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.TestCases.Tests.Issues
+
+namespace Maui.Controls.Sample.Issues
 {
 	public partial class Issue5354 : _IssuesUITest
 	{
@@ -17,6 +16,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewItemsLayoutUpdate()
 		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows },
+			  "This is a product bug.");
+
 			App.WaitForElement("CollectionView5354");
 			App.WaitForElement("Button5354");
 
@@ -25,20 +27,19 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				var linearRect0 = App.WaitForElement("Image0").GetRect();
 				var linearRect1 = App.WaitForElement("Image1").GetRect();
 
-				ClassicAssert.AreEqual(linearRect0.X, linearRect1.X);
-				ClassicAssert.GreaterOrEqual(linearRect1.Y, linearRect0.Y + linearRect0.Height);
+				Assert.AreEqual(linearRect0.X, linearRect1.X);
+				Assert.GreaterOrEqual(linearRect1.Y, linearRect0.Y + linearRect0.Height);
 
 				App.Click("Button5354");
 
 				var gridRect0 = App.WaitForElement("Image0").GetRect();
 				var gridRect1 = App.WaitForElement("Image1").GetRect();
 
-				ClassicAssert.AreEqual(gridRect0.Y, gridRect1.Y);
-				ClassicAssert.AreEqual(gridRect0.Height, gridRect1.Height);
+				Assert.AreEqual(gridRect0.Y, gridRect1.Y);
+				Assert.AreEqual(gridRect0.Height, gridRect1.Height);
 
 				App.Click("Button5354");
 			}
 		}
 	}
 }
-#endif

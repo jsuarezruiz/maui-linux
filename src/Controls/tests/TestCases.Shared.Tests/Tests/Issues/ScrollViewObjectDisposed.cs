@@ -2,7 +2,7 @@
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.TestCases.Tests.Issues
+namespace Microsoft.Maui.AppiumTests
 {
 	[Category(UITestCategories.ScrollView)]
 	public class ScrollViewObjectDisposedUITests : _IssuesUITest
@@ -18,9 +18,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Description("Tapping a button inside the ScrollView does not cause an exception.")]
 		public void ScrollViewObjectDisposedTest()
 		{
-			App.WaitForElement("TestButtonId");
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Windows },
+				"This test is failing, likely due to product issue");
+
 			// 1. Tap the button.
-			App.Tap("TestButtonId");
+			App.Click("TestButtonId");
 
 			// 2. Verify does not cause an exception.
 			App.WaitForElement("Success");

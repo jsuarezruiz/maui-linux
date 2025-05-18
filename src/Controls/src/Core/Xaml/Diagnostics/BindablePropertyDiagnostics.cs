@@ -31,19 +31,17 @@ internal static class BindablePropertyDiagnostics
 		if (specificity == SetterSpecificity.FromHandler)
 			return new ValueSource(BaseValueSource.Unknown, isCurrent: true);
 
-		if (specificity.IsVsm)
+		if (specificity.Vsm > 0)
 			return new ValueSource(BaseValueSource.Local);
-		(ushort sStyle, byte sId, byte sClass, byte sType) = specificity.StyleInfo;
-
-		if (sStyle > 0)
+		if (specificity.Style > 0)
 			return new ValueSource(BaseValueSource.Style);
-		if (sId > 0 || sClass > 0 || sType > 0)
+		if (specificity.Id > 0 || specificity.Class > 0 || specificity.Type > 0)
 			return new ValueSource(BaseValueSource.Style);
-		if (specificity.IsManual)
+		if (specificity.Manual > 0)
 			return new ValueSource(BaseValueSource.Local);
-		if (specificity.IsDynamicResource)
+		if (specificity.DynamicResource > 0)
 			return new ValueSource(BaseValueSource.Unknown, isExpression: true);
-		if (specificity.IsBinding)
+		if (specificity.Binding > 0)
 			return new ValueSource(BaseValueSource.Unknown, isExpression: true);
 
 		return new ValueSource(BaseValueSource.Unknown);

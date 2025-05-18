@@ -314,6 +314,10 @@
         Version="$(MicrosoftBuildUtilitiesCorePackageVersion)"
         PrivateAssets="All"
     />
+    <PackageReference
+        Update="GtkSharp"
+        Version="$(GtkSharpPackageVersion)"
+    />
 
     <PackageReference Update="Microsoft.DotNet.Build.Tasks.Workloads" Version="$(MicrosoftDotNetBuildTasksWorkloadsPackageVersion)" />
     <PackageReference Update="Microsoft.Signed.WiX" Version="$(MicrosoftSignedWixVersion)" />

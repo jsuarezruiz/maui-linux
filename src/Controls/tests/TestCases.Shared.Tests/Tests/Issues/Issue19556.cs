@@ -1,9 +1,8 @@
-﻿#if ANDROID //This test case verifies the "System Specific Fonts" exclusively on the Android platform.
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.TestCases.Tests.Issues;
+namespace Microsoft.Maui.AppiumTests.Issues;
 
 public class Issue19556 : _IssuesUITest
 {
@@ -14,13 +13,13 @@ public class Issue19556 : _IssuesUITest
 	{ }
 
 	[Test]
-	[Category(UITestCategories.Label)]
 	public void SystemFontsShouldRenderCorrectly()
 	{
+		this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows });
+
 		_ = App.WaitForElement("label");
 
 		// The test passes if fonts are correctly rendered
 		VerifyScreenshot();
 	}
 }
-#endif

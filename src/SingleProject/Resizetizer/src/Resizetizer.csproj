@@ -16,8 +16,8 @@
   <PropertyGroup>
     <!-- NuGet package information -->
     <IsPackable>true</IsPackable>
-    <PackageId>Microsoft.Maui.Resizetizer</PackageId>
-    <Description>.NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. This package contains image, font and raw asset processing tools.</Description>
+    <PackageId>GtkSharp.Maui.Resizetizer</PackageId>
+    <Description>(MauiLinux is a fork of MAUI) .NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. This package contains image, font and raw asset processing tools.</Description>
   </PropertyGroup>
 
   <ItemGroup>

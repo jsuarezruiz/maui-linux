@@ -1,4 +1,4 @@
-﻿using OpenQA.Selenium.Appium.iOS;
+﻿using OpenQA.Selenium.Appium.Android;
 using OpenQA.Selenium.Appium.Windows;
 using UITest.Core;
 
@@ -12,7 +12,6 @@ namespace UITest.Appium
 		const string ResetAppCommand = "resetApp";
 		const string CloseAppCommand = "closeApp";
 		const string BackCommand = "back";
-		const string RefreshCommand = "refresh";
 
 		protected readonly AppiumApp _app;
 
@@ -23,8 +22,7 @@ namespace UITest.Appium
 			BackgroundAppCommand,
 			ResetAppCommand,
 			CloseAppCommand,
-			BackCommand,
-			RefreshCommand
+			BackCommand
 		};
 
 		public AppiumLifecycleActions(AppiumApp app)
@@ -47,7 +45,6 @@ namespace UITest.Appium
 				ResetAppCommand => ResetApp(parameters),
 				CloseAppCommand => CloseApp(parameters),
 				BackCommand => Back(parameters),
-				RefreshCommand => Refresh(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
 		}
@@ -64,22 +61,11 @@ namespace UITest.Appium
 					{ "bundleId", _app.GetAppId() },
 				});
 			}
-			else if (_app.Driver is WindowsDriver windowsDriver)
+			else if (_app.GetTestDevice() == TestDevice.Windows)
 			{
-				// Appium driver removed the LaunchApp method in 5.0.0, so we need to use the executeScript method instead
-				// Currently the appium-windows-driver reports the following commands as compatible:
-				//   startRecordingScreen,stopRecordingScreen,launchApp,closeApp,deleteFile,deleteFolder,
-				//   click,scroll,clickAndDrag,hover,keys,setClipboard,getClipboard
-				windowsDriver.ExecuteScript("windows: launchApp", [_app.GetAppId()]);
-			}
-			else if (_app.Driver is IOSDriver iOSDriver)
-			{
-				var args = _app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
-				iOSDriver.ExecuteScript("mobile: launchApp", new Dictionary<string, object>
-				{
-					{ "bundleId", _app.GetAppId() },
-					{ "environment", args },
-				});
+#pragma warning disable CS0618 // Type or member is obsolete
+				_app.Driver.LaunchApp();
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 			else
 			{
@@ -131,52 +117,27 @@ namespace UITest.Appium
 
 		CommandResponse CloseApp(IDictionary<string, object> parameters)
 		{
-			try
-			{
-				if (_app is null || _app.Driver is null)
-					return CommandResponse.FailedEmptyResponse;
-
-				if (_app.AppState == ApplicationState.NotRunning)
-					return CommandResponse.SuccessEmptyResponse;
-			}
-			catch (Exception)
-			{
-				// TODO: Pass in logger so we can log these exceptions
-
-				// Occasionally the app seems to get so locked up it can't 
-				// even report back the appstate. In that case, we'll just
-				// try to trigger a reset.
-			}
-
-			try
-			{
-				if (_app.GetTestDevice() == TestDevice.Mac)
-				{
-					_app.Driver.ExecuteScript("macos: terminateApp", new Dictionary<string, object>
-					{
-						{ "bundleId", _app.GetAppId() },
-					});
-				}
-				else if (_app.Driver is WindowsDriver windowsDriver)
-				{
-					// This is still here for now, but it looks like it will get removed just like
-					// LaunchApp was in 5.0.0, in which case we may need to use:
-					// windowsDriver.ExecuteScript("windows: closeApp", [_app.GetAppId()]);
-					windowsDriver.CloseApp();
-				}
-				else
-				{
-					_app.Driver.TerminateApp(_app.GetAppId());
-				}
-			}
-			catch (Exception)
-			{
-				// TODO Pass in logger so we can log these exceptions
-
-				// Occasionally the app seems like it's already closed before we get here
-				// and then this throws an exception.
+			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
+
+			if (_app.AppState == ApplicationState.NotRunning)
+				return CommandResponse.SuccessEmptyResponse;
+
+			if (_app.GetTestDevice() == TestDevice.Mac)
+			{
+				_app.Driver.ExecuteScript("macos: terminateApp", new Dictionary<string, object>
+				{
+					{ "bundleId", _app.GetAppId() },
+				});
 			}
+			else if (_app.GetTestDevice() == TestDevice.Windows)
+			{
+#pragma warning disable CS0618 // Type or member is obsolete
+				_app.Driver.CloseApp();
+#pragma warning restore CS0618 // Type or member is obsolete
+			}
+			else
+				_app.Driver.TerminateApp(_app.GetAppId());
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
@@ -186,26 +147,8 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
-			try
-			{
-				// Navigate backwards in the history, if possible.
-				_app.Driver.Navigate().Back();
-
-				return CommandResponse.SuccessEmptyResponse;
-			}
-			catch
-			{
-				return CommandResponse.FailedEmptyResponse;
-			}
-		}
-
-		CommandResponse Refresh(IDictionary<string, object> parameters)
-		{
-			if (_app?.Driver is null)
-				return CommandResponse.FailedEmptyResponse;
-
-			// Refresh the current page.
-			_app.Driver.Navigate().Refresh();
+			// Navigate backwards in the history, if possible.
+			_app.Driver.Navigate().Back();
 
 			return CommandResponse.SuccessEmptyResponse;
 		}

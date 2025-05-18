@@ -1,5 +1,13 @@
-﻿namespace Maui.Controls.Sample.Issues
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Graphics;
+
+namespace Maui.Controls.Sample.Issues
 {
+	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 19657, "CarouselView Content disappears when 'Loop' is false and inside ScrollView", PlatformAffected.iOS)]
 	public partial class Issue19657 : ContentPage
 	{

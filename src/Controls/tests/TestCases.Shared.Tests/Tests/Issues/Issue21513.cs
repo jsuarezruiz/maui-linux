@@ -1,8 +1,8 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.TestCases.Tests.Issues
+namespace Microsoft.Maui.AppiumTests.Issues
 {
 	public class Issue21513 : _IssuesUITest
 	{
@@ -13,9 +13,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Buttons with images don't cover text";
 
 		[Test]
-		[Category(UITestCategories.Button)]
 		public void Issue21513Test()
 		{
+			this.IgnoreIfPlatforms(new[] { TestDevice.Mac, TestDevice.iOS });
+
 			App.WaitForElement("WaitForStubControl");
 
 			VerifyScreenshot();

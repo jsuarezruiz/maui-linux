@@ -160,6 +160,8 @@
     <CommunityToolkitMauiPackageVersion>11.1.1</CommunityToolkitMauiPackageVersion>
     <CommunityToolkitMauiPreviousPackageVersion>9.1.0</CommunityToolkitMauiPreviousPackageVersion>
     <CommunityToolkitMvvmPackageVersion>8.3.2</CommunityToolkitMvvmPackageVersion>
+    <!-- GTK Package Version -->
+    <GtkSharpPackageVersion>3.24.24.95</GtkSharpPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Appium -->
@@ -217,3 +219,4 @@
     <MicrosofttvOSSdkPackageVersion>$(MicrosofttvOSSdknet90_180PackageVersion)</MicrosofttvOSSdkPackageVersion>
   </PropertyGroup>
 </Project>
+    <GtkSharpPackageVersion>3.24.24.95</GtkSharpPackageVersion>

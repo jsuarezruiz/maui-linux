@@ -2,6 +2,8 @@
 using PlatformView = UIKit.UIMenu;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.MenuFlyoutSeparator;
+#elif GTK
+using PlatformView = Gtk.SeparatorMenuItem;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS)
 using System;
 using PlatformView = System.Object;
@@ -35,10 +37,10 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-#if !WINDOWS && !IOS
+#if !WINDOWS && !IOS && !GTK
 		protected override PlatformView CreatePlatformElement()
 		{
-			throw new NotImplementedException();
+			throw new System.NotImplementedException();
 		}
 #endif
 

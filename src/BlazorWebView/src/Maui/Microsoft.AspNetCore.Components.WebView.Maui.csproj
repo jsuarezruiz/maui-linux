@@ -17,9 +17,9 @@
   <PropertyGroup>
     <!-- NuGet package information -->
     <IsPackable>true</IsPackable>
-    <PackageId>Microsoft.AspNetCore.Components.WebView.Maui</PackageId>
+    <PackageId>GtkSharp.Maui.AspNetCore.Components.WebView</PackageId>
     <PackageTags>$(DefaultPackageTags);blazor;webview;aspnet</PackageTags>
-    <PackageIconFullPath>$(MauiRootDirectory)Assets\aspnet-icon.png</PackageIconFullPath>
+    <PackageIconFile>$(MauiRootDirectory)Assets\aspnet-icon.png</PackageIconFile>
     <Description>Build .NET Multi-platform App UI (.NET MAUI) apps with Blazor web UI in the BlazorWebView control.</Description>
   </PropertyGroup>
 
@@ -45,6 +45,11 @@
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" PrivateAssets="all" />
   </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'gtk' ">
+    <Compile Include="..\Gtk.SharedSource\**\*.cs" Link="Gtk\SharedSource\%(Filename)%(Extension)" />
+  </ItemGroup>
+
 
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
   <Import Project="$(MauiRootDirectory)src\Workload\Shared\LibraryPacks.targets" />

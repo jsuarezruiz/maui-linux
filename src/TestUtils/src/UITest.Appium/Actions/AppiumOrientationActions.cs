@@ -6,7 +6,6 @@ namespace UITest.Appium
 	{
 		const string SetOrientationPortraitCommand = "setOrientationPortrait";
 		const string SetOrientationLandscapeCommand = "setOrientationLandscape";
-		const string GetOrientationCommand = "getOrientation";
 
 		protected readonly AppiumApp _app;
 
@@ -14,7 +13,6 @@ namespace UITest.Appium
 		{
 			SetOrientationPortraitCommand,
 			SetOrientationLandscapeCommand,
-			GetOrientationCommand,
 		};
 
 		public AppiumOrientationActions(AppiumApp app)
@@ -33,7 +31,6 @@ namespace UITest.Appium
 			{
 				SetOrientationPortraitCommand => SetOrientationPortrait(parameters),
 				SetOrientationLandscapeCommand => SetOrientationLandscape(parameters),
-				GetOrientationCommand => GetOrientation(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
 		}
@@ -46,11 +43,6 @@ namespace UITest.Appium
 		CommandResponse SetOrientationLandscape(IDictionary<string, object> parameters)
 		{
 			return new CommandResponse(_app.Driver.Orientation = OpenQA.Selenium.ScreenOrientation.Landscape, CommandResponseResult.Success);
-		}
-
-		CommandResponse GetOrientation(IDictionary<string, object> parameters)
-		{
-			return new CommandResponse(_app.Driver.Orientation, CommandResponseResult.Success);
 		}
 	}
 }

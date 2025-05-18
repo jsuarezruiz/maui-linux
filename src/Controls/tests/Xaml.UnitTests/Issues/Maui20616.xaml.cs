@@ -50,7 +50,7 @@ public partial class Maui20616
 
 			if (useCompiledXaml)
 			{
-				var binding = page.LabelA.GetContext(Label.TextProperty).Bindings.GetValue();
+				var binding = page.LabelA.GetContext(Label.TextProperty).Bindings.Values.Single();
 				Assert.That(binding, Is.TypeOf<TypedBinding<ViewModel20616<string>, string>>());
 			}
 
@@ -59,7 +59,7 @@ public partial class Maui20616
 
 			if (useCompiledXaml)
 			{
-				var binding = page.LabelB.GetContext(Label.TextProperty).Bindings.GetValue();
+				var binding = page.LabelB.GetContext(Label.TextProperty).Bindings.Values.Single();
 				Assert.That(binding, Is.TypeOf<TypedBinding<ViewModel20616<ViewModel20616<bool>>, bool>>());
 			}
 

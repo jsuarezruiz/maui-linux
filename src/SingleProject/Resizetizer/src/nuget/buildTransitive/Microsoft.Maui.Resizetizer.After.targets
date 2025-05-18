@@ -59,20 +59,6 @@
             _CleanResizetizer;
         </CleanDependsOn>
 
-        <_ResizetizerInputsFile>$(IntermediateOutputPath)mauiimage.inputs</_ResizetizerInputsFile>
-        <_ResizetizerStampFile>$(IntermediateOutputPath)mauiimage.stamp</_ResizetizerStampFile>
-        <_MauiFontInputsFile>$(IntermediateOutputPath)mauifont.inputs</_MauiFontInputsFile>
-        <_MauiFontStampFile>$(IntermediateOutputPath)mauifont.stamp</_MauiFontStampFile>
-        <_MauiSplashInputsFile>$(IntermediateOutputPath)mauisplash.inputs</_MauiSplashInputsFile>
-        <_MauiSplashStampFile>$(IntermediateOutputPath)mauisplash.stamp</_MauiSplashStampFile>
-        <_MauiManifestStampFile>$(IntermediateOutputPath)mauimanifest.stamp</_MauiManifestStampFile>
-
-        <_ResizetizerIntermediateOutputRoot>$(IntermediateOutputPath)resizetizer\</_ResizetizerIntermediateOutputRoot>
-        <_MauiIntermediateImages>$(_ResizetizerIntermediateOutputRoot)r\</_MauiIntermediateImages>
-        <_MauiIntermediateFonts>$(_ResizetizerIntermediateOutputRoot)f\</_MauiIntermediateFonts>
-        <_MauiIntermediateSplashScreen>$(_ResizetizerIntermediateOutputRoot)sp\</_MauiIntermediateSplashScreen>
-        <_MauiIntermediateManifest>$(_ResizetizerIntermediateOutputRoot)m\</_MauiIntermediateManifest>
-
         <_ResizetizerPlatformIdentifier>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_ResizetizerPlatformIdentifier>
         <_ResizetizerNoTargetPlatform Condition="'$(_ResizetizerPlatformIdentifier)' == ''">True</_ResizetizerNoTargetPlatform>
         <_ResizetizerPlatformIsAndroid Condition="'$(_ResizetizerPlatformIdentifier)' == 'android'">True</_ResizetizerPlatformIsAndroid>
@@ -82,6 +68,23 @@
         <_ResizetizerPlatformIstvOS Condition="'$(_ResizetizerPlatformIdentifier)' == 'tvos'">True</_ResizetizerPlatformIstvOS>
         <_ResizetizerPlatformIsWindows Condition="$(_ResizetizerPlatformIdentifier.Contains('windows')) == 'True'">True</_ResizetizerPlatformIsWindows>
         <_ResizetizerPlatformIsTizen Condition="'$(_ResizetizerPlatformIdentifier)' == 'tizen'">True</_ResizetizerPlatformIsTizen>
+
+        <_ResizetizerIntermediateOutputPath Condition=" '$(_ResizetizerIntermediateOutputPath)' == '' " >$(IntermediateOutputPath)</_ResizetizerIntermediateOutputPath>
+
+        <_ResizetizerInputsFile>$(_ResizetizerIntermediateOutputPath)mauiimage.inputs</_ResizetizerInputsFile>
+        <_ResizetizerOutputsFile>$(_ResizetizerIntermediateOutputPath)mauiimage.outputs</_ResizetizerOutputsFile>
+        <_ResizetizerStampFile>$(_ResizetizerIntermediateOutputPath)mauiimage.stamp</_ResizetizerStampFile>
+        <_MauiFontInputsFile>$(_ResizetizerIntermediateOutputPath)mauifont.inputs</_MauiFontInputsFile>
+        <_MauiFontStampFile>$(_ResizetizerIntermediateOutputPath)mauifont.stamp</_MauiFontStampFile>
+        <_MauiSplashInputsFile>$(_ResizetizerIntermediateOutputPath)mauisplash.inputs</_MauiSplashInputsFile>
+        <_MauiSplashStampFile>$(_ResizetizerIntermediateOutputPath)mauisplash.stamp</_MauiSplashStampFile>
+        <_MauiManifestStampFile>$(_ResizetizerIntermediateOutputPath)mauimanifest.stamp</_MauiManifestStampFile>
+
+        <_ResizetizerIntermediateOutputRoot>$(_ResizetizerIntermediateOutputPath)resizetizer\</_ResizetizerIntermediateOutputRoot>
+        <_MauiIntermediateImages>$(_ResizetizerIntermediateOutputRoot)r\</_MauiIntermediateImages>
+        <_MauiIntermediateFonts>$(_ResizetizerIntermediateOutputRoot)f\</_MauiIntermediateFonts>
+        <_MauiIntermediateSplashScreen>$(_ResizetizerIntermediateOutputRoot)sp\</_MauiIntermediateSplashScreen>
+        <_MauiIntermediateManifest>$(_ResizetizerIntermediateOutputRoot)m\</_MauiIntermediateManifest>
 
         <ResizetizerIncludeSelfProject Condition="'$(ResizetizerIncludeSelfProject)' == ''">False</ResizetizerIncludeSelfProject>
 
@@ -115,6 +118,7 @@
             $(ResizetizeDependsOnTargets);
             ResizetizeCollectItems;
             ProcessMauiSplashScreens;
+            _ReadResizetizeImagesOutputs;
         </ResizetizeDependsOnTargets>
         <ProcessMauiFontsDependsOnTargets>
             $(ProcessMauiFontsDependsOnTargets);
@@ -502,7 +506,7 @@
         </ItemGroup>
 
         <!-- Stamp file for Outputs -->
-        <MakeDir Directories="$(IntermediateOutputPath)"/>
+        <MakeDir Directories="$(_ResizetizerIntermediateOutputPath)"/>
         <Touch Files="$(_MauiSplashStampFile)" AlwaysCreate="True" />
 
         <ItemGroup>
@@ -601,16 +605,22 @@
         </ItemGroup>
     </Target>
 
+    <Target Name="_ReadResizetizeImagesOutputs">
+        <ReadLinesFromFile File="$(_ResizetizerOutputsFile)" Condition="Exists ('$(_ResizetizerOutputsFile)')">
+            <Output TaskParameter="Lines" ItemName="_ResizetizerOutputs" />
+        </ReadLinesFromFile>
+    </Target>
+
     <Target Name="ResizetizeImages"
         Condition="'$(EnableMauiImageProcessing)' == 'true'"
         Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);@(MauiImage)"
-        Outputs="$(_ResizetizerStampFile)"
+        Outputs="$(_ResizetizerStampFile);@(_ResizetizerOutputs)"
         AfterTargets="$(ResizetizeAfterTargets)"
         BeforeTargets="$(ResizetizeBeforeTargets)"
         DependsOnTargets="$(ResizetizeDependsOnTargets)">
 
         <ItemGroup>
-            <_MauiImageToProcess Include="@(MauiImage)" Exclude="$(DefaultItemExcludes)" />
+            <_MauiImageToProcess Include="@(MauiImage)" Condition=" '%(FileName)%(Extension)' != '.DS_Store' " />
         </ItemGroup>
 
         <DetectInvalidResourceOutputFilenamesTask
@@ -720,10 +730,17 @@
 
         <!-- Touch/create our stamp file for outputs -->
         <Touch Files="$(_ResizetizerStampFile)" AlwaysCreate="True" />
+        <WriteLinesToFile
+            File="$(_ResizetizerOutputsFile)"
+            Lines="@(_ResizetizerCollectedImages->'%(Identity)')"
+            Overwrite="true"
+            WriteOnlyWhenDifferent="true"
+        />
 
         <!-- Include our images and stamp file as filewrites so they don't get rm'd -->
         <ItemGroup>
             <FileWrites Include="$(_ResizetizerStampFile)" />
+            <FileWrites Include="$(_ResizetizerOutputsFile)" />
         </ItemGroup>
     </Target>
 

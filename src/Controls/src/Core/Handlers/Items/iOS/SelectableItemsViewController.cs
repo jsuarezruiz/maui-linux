@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Foundation;
+using Microsoft.Maui.Controls.Platform;
 using ObjCRuntime;
 using UIKit;
 
@@ -40,7 +41,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (index.Section > -1 && index.Item > -1)
 			{
-				CollectionView.SelectItem(index, true, UICollectionViewScrollPosition.None);
+				// Ensure the selected index is updated after the collection view's items generation is completed
+				CollectionView.PerformBatchUpdates(null, _ =>
+				{
+					CollectionView.SelectItem(index, true, UICollectionViewScrollPosition.None);
+					CollectionView.CellForItem(index)?.UpdateSelectedAccessibility(true);
+				});
 			}
 		}
 
@@ -70,6 +76,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					ItemsView.SelectedItems.Add(GetItemAtIndex(indexPath));
 					break;
 			}
+
+			CollectionView.CellForItem(indexPath)?.UpdateSelectedAccessibility(true);
 		}
 
 		void FormsDeselectItem(NSIndexPath indexPath)
@@ -86,6 +94,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					ItemsView.SelectedItems.Remove(GetItemAtIndex(indexPath));
 					break;
 			}
+
+			CollectionView.CellForItem(indexPath)?.UpdateSelectedAccessibility(false);
 		}
 
 		internal void UpdatePlatformSelection()
@@ -125,23 +135,31 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			var mode = ItemsView.SelectionMode;
 
+			// We want to make sure we clear the selection trait before we switch modes.
+			// If we do this after we switch modes, cells that are selected may not show up as selected anymore.
+			CollectionView.ClearSelectedAccessibilityTraits(CollectionView.GetIndexPathsForSelectedItems());
+
 			switch (mode)
 			{
 				case SelectionMode.None:
 					CollectionView.AllowsSelection = false;
 					CollectionView.AllowsMultipleSelection = false;
+					ClearsSelectionOnViewWillAppear = true;
 					break;
 				case SelectionMode.Single:
 					CollectionView.AllowsSelection = true;
 					CollectionView.AllowsMultipleSelection = false;
+					ClearsSelectionOnViewWillAppear = false;
 					break;
 				case SelectionMode.Multiple:
 					CollectionView.AllowsSelection = true;
 					CollectionView.AllowsMultipleSelection = true;
+					ClearsSelectionOnViewWillAppear = false;
 					break;
 			}
 
 			UpdatePlatformSelection();
+			CollectionView.UpdateAccessibilityTraits(ItemsView);
 		}
 
 		void SynchronizePlatformSelectionWithSelectedItems()

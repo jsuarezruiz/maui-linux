@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Views;
@@ -22,12 +22,67 @@ using Xunit;
 using static Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using AView = Android.Views.View;
+using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Shell)]
 	public partial class ShellTests
 	{
+		[Fact(DisplayName = "No crash going back using 'Shell.Current.GoToAsync(\"..\")'")]
+		public async Task GoingBackUsingGoToAsyncMethod()
+		{
+			SetupBuilder();
+
+			var page1 = new ContentPage();
+
+			var page2Content = new Label { Text = "Test" };
+			var page2 = new ContentPage { Content = page2Content };
+
+			var pointerGestureRecognizer = new PointerGestureRecognizer();
+			pointerGestureRecognizer.PointerPressed += (sender, args) =>
+			{
+				Console.WriteLine("Page Content pressed");
+			};
+
+			page2Content.GestureRecognizers.Add(pointerGestureRecognizer);
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				shell.Items.Add(new TabBar()
+				{
+					Items =
+					{
+						new ShellContent()
+						{
+							Route = "Item1",
+							Content = page1
+						},
+						new ShellContent()
+						{
+							Route = "Item2",
+							Content = page2
+						},
+					}
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(page1);
+				await shell.GoToAsync("//Item2");
+				await shell.GoToAsync("..");
+
+				await shell.GoToAsync("//Item1");
+				await shell.GoToAsync("//Item2");
+				await shell.Navigation.PopAsync();
+
+				await shell.GoToAsync("//Item1");
+				await shell.GoToAsync("//Item2");
+				await shell.GoToAsync("..");
+			});
+		}
+
 		[Theory]
 		[InlineData(true)]
 		[InlineData(false)]
@@ -399,6 +454,68 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		//src/Compatibility/Core/tests/Android/ShellTests.cs
+		[Fact(DisplayName = "Flyout Header Changes When Updated")]
+		public async Task FlyoutHeaderReactsToChanges()
+		{
+			SetupBuilder();
+
+			var initialHeader = new Label() { Text = "Hello" };
+			var newHeader = new Label() { Text = "Hello Part 2" };
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new FlyoutItem() { Items = { new ContentPage() }, Title = "Flyout Item" };
+				shell.FlyoutHeader = initialHeader;
+			});
+
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
+			{
+				var initialHeaderPlatformView = initialHeader.ToPlatform();
+				Assert.NotNull(initialHeaderPlatformView);
+				Assert.NotNull(initialHeader.Handler);
+
+				shell.FlyoutHeader = newHeader;
+
+				var newHeaderPlatformView = newHeader.ToPlatform();
+				Assert.NotNull(newHeaderPlatformView);
+				Assert.NotNull(newHeader.Handler);
+
+				Assert.Null(initialHeader.Handler);
+
+				await OpenFlyout(handler);
+
+				var appBar = newHeaderPlatformView.GetParentOfType<AppBarLayout>();
+				Assert.NotNull(appBar);
+			});
+		}
+
+		//src/Compatibility/Core/tests/Android/ShellTests.cs
+		[Fact(DisplayName = "Ensure Default Colors are White for BottomNavigationView")]
+		public async Task ShellTabColorsDefaultToWhite()
+		{
+			SetupBuilder();
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = "Tab 1" });
+			});
+
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, (handler) =>
+			{
+				var bottomNavigationView = GetDrawerLayout(handler).GetFirstChildOfType<BottomNavigationView>();
+				Assert.NotNull(bottomNavigationView);
+
+				var background = bottomNavigationView.Background;
+				Assert.NotNull(background);
+
+				if (background is ColorChangeRevealDrawable changeRevealDrawable)
+				{
+					Assert.Equal(Android.Graphics.Color.White, changeRevealDrawable.EndColor);
+				}
+			});
+		}
+
 		protected AView GetFlyoutPlatformView(ShellRenderer shellRenderer)
 		{
 			var drawerLayout = GetDrawerLayout(shellRenderer);
@@ -524,7 +641,9 @@ namespace Microsoft.Maui.DeviceTests
 			var behavior = clLayoutParams.Behavior as AppBarLayout.Behavior;
 			var headerContainer = appbarLayout.GetFirstChildOfType<HeaderContainer>();
 
+#pragma warning disable XAOBS001 // Obsolete
 			var verticalOffset = flyoutItems.ComputeVerticalScrollOffset();
+#pragma warning restore XAOBS001 // Obsolete
 			behavior.OnNestedPreScroll(coordinatorLayout, appbarLayout, flyoutItems, 0, verticalOffset, new int[2], ViewCompat.TypeTouch);
 			await Task.Delay(10);
 

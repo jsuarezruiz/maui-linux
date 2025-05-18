@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using CoreGraphics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
@@ -16,7 +17,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	{
 		UIView _clickOffView;
 		UIViewController _detailController;
-		VisualElement _element;
+		WeakReference<VisualElement> _element;
 		bool _disposed;
 
 		UIViewController _flyoutController;
@@ -74,7 +75,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			get { return _presented; }
 		}
 
-		public VisualElement Element => _viewHandlerWrapper.Element ?? _element;
+		public VisualElement Element => _viewHandlerWrapper.Element ?? _element?.GetTargetOrDefault();
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
@@ -99,7 +100,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_clickOffView = new UIView();
 			_clickOffView.BackgroundColor = new Color(0, 0, 0, 0).ToPlatform();
 			_viewHandlerWrapper.SetVirtualView(element, OnElementChanged, false);
-			_element = element;
+			_element = new(element);
 
 			if (_intialLayoutFinished)
 			{
@@ -198,6 +199,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			UpdatePanGesture();
 			UpdateApplyShadow(((FlyoutPage)Element).OnThisPlatform().GetApplyShadow());
+			UpdatePageSpecifics();
 		}
 
 		public override void ViewWillTransitionToSize(CoreGraphics.CGSize toSize, IUIViewControllerTransitionCoordinator coordinator)
@@ -267,9 +269,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				EmptyContainers();
-
-				Page.SendDisappearing();
-
+				_element = null;
 				_disposed = true;
 			}
 
@@ -364,6 +364,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateBackground();
 			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.FlyoutPage.ApplyShadowProperty.PropertyName)
 				UpdateApplyShadow(((FlyoutPage)Element).OnThisPlatform().GetApplyShadow());
+			else if (e.PropertyName == Microsoft.Maui.Controls.FlyoutPage.FlyoutLayoutBehaviorProperty.PropertyName)
+				UpdateFlyoutLayoutBehaviorChanges();
+			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName ||
+					 e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName)
+				UpdatePageSpecifics();
 		}
 
 		void LayoutChildren(bool animated)
@@ -471,6 +476,25 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateClickOffViewFrame();
 		}
 
+		void UpdateFlyoutLayoutBehaviorChanges()
+		{
+			LayoutChildren(true);
+			if (FlyoutPage is null)
+				return;
+			FlyoutLayoutBehavior flyoutBehavior = FlyoutPage.FlyoutLayoutBehavior;
+			bool shouldPresent = FlyoutPageController.ShouldShowSplitMode;
+			if (flyoutBehavior == FlyoutLayoutBehavior.Popover || flyoutBehavior == FlyoutLayoutBehavior.Default)
+			{
+				shouldPresent = false;
+			}
+
+			if (shouldPresent != FlyoutPage.IsPresented)
+			{
+				((IElementController)Element).SetValueFromRenderer(FlyoutPage.IsPresentedProperty, shouldPresent);
+				UpdateLeftBarButton();
+			}
+		}
+
 		void PackContainers()
 		{
 			_detailController.View.BackgroundColor = new UIColor(1, 1, 1, 1);
@@ -551,6 +575,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				detailRenderer.ViewController.View.Superview.BackgroundColor = Microsoft.Maui.Graphics.Colors.Black.ToPlatform();
 
 			ToggleAccessibilityElementsHidden();
+			UpdatePageSpecifics();
 		}
 
 		void UpdateLeftBarButton()
@@ -571,6 +596,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateApplyShadow(bool value)
 		{
 			_applyShadow = value;
+		}
+
+		void UpdatePageSpecifics()
+		{
+			ChildViewControllerForHomeIndicatorAutoHidden?.SetNeedsUpdateOfHomeIndicatorAutoHidden();
+			ChildViewControllerForStatusBarHidden()?.SetNeedsStatusBarAppearanceUpdate();
 		}
 
 		public override UIViewController ChildViewControllerForStatusBarHidden()
@@ -652,11 +683,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 								targetFrame.X = (nfloat)Math.Min(_flyoutController.View.Frame.Width, Math.Max(0, motion));
 
 							targetFrame.X = targetFrame.X * directionModifier;
-							if (_applyShadow)
-							{
-								var openProgress = targetFrame.X / _flyoutController.View.Frame.Width;
-								ApplyDetailShadow((nfloat)openProgress);
-							}
+
+							ApplyShadow(targetFrame);
 
 							detailView.Frame = targetFrame;
 						}
@@ -681,11 +709,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 								targetFrame.X = (float)Element.Bounds.Width - (flyoutWidth + targetFrame.X);
 							}
 
-							if (_applyShadow)
-							{
-								var openProgress = targetFrame.X / flyoutWidth;
-								ApplyDetailShadow((nfloat)openProgress);
-							}
+							ApplyShadow(targetFrame);
 
 							flyoutView.Frame = targetFrame;
 						}
@@ -744,6 +768,30 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_panGesture.ShouldReceiveTouch = shouldReceive;
 			_panGesture.MaximumNumberOfTouches = 2;
 			View.AddGestureRecognizer(_panGesture);
+		}
+
+		void ApplyShadow(CGRect targetFrame)
+		{
+			if (!_applyShadow)
+				return;
+
+			var flyoutWidth = _flyoutController.View.Frame.Width;
+			nfloat openProgress;
+
+			if (!FlyoutOverlapsDetailsInPopoverMode)
+			{
+				openProgress = !IsRTL
+					? targetFrame.X / flyoutWidth
+					: ((float)Element.Bounds.Width - targetFrame.Right) / flyoutWidth;
+			}
+			else
+			{
+				openProgress = !IsRTL
+					? (targetFrame.X + flyoutWidth) / flyoutWidth
+					: ((float)Element.Bounds.Width - targetFrame.X) / flyoutWidth;
+			}
+
+			ApplyDetailShadow(openProgress);
 		}
 
 		static bool IsSwipeView(UIView view)

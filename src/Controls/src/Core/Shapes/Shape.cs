@@ -310,8 +310,8 @@ namespace Microsoft.Maui.Controls.Shapes
 				float calculatedWidth = (float)(viewBounds.Width / pathBounds.Width);
 				float calculatedHeight = (float)(viewBounds.Height / pathBounds.Height);
 
-				float widthScale = float.IsNaN(calculatedWidth) ? 0 : calculatedWidth;
-				float heightScale = float.IsNaN(calculatedHeight) ? 0 : calculatedHeight;
+				float widthScale = float.IsNaN(calculatedWidth) || float.IsInfinity(calculatedWidth) ? 0 : calculatedWidth;
+				float heightScale = float.IsNaN(calculatedHeight) || float.IsInfinity(calculatedHeight) ? 0 : calculatedHeight;
 
 				switch (Aspect)
 				{
@@ -393,8 +393,8 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			double scaleX = widthConstraint / result.Width;
 			double scaleY = heightConstraint / result.Height;
-			scaleX = double.IsNaN(scaleX) ? 0 : scaleX;
-			scaleY = double.IsNaN(scaleY) ? 0 : scaleY;
+			scaleX = double.IsNaN(scaleX) || double.IsInfinity(scaleX) ? 0 : scaleX;
+			scaleY = double.IsNaN(scaleY) || double.IsInfinity(scaleY) ? 0 : scaleY;
 
 			switch (Aspect)
 			{
@@ -404,14 +404,14 @@ namespace Microsoft.Maui.Controls.Shapes
 					break;
 
 				case Stretch.Fill:
-					if (!double.IsInfinity(heightConstraint))
+					if (!double.IsInfinity(heightConstraint) || HeightRequest > 0)
 					{
-						result.Height = heightConstraint;
+						result.Height = HeightRequest < 0 ? heightConstraint : HeightRequest;
 					}
 
-					if (!double.IsInfinity(widthConstraint))
+					if (!double.IsInfinity(widthConstraint) || WidthRequest > 0)
 					{
-						result.Width = widthConstraint;
+						result.Width = WidthRequest < 0 ? widthConstraint : WidthRequest;
 					}
 					break;
 
@@ -449,7 +449,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			{
 				var width = Width;
 
-				// If the shape has never been laid out, then Width won't actually have a value;
+				// If the shape has never been arranged, then Width won't actually have a value;
 				// use the fallback value instead.
 				return width == -1 ? _fallbackWidth : width;
 			}
@@ -461,7 +461,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			{
 				var height = Height;
 
-				// If the shape has never been laid out, then Height won't actually have a value;
+				// If the shape has never been arranged, then Height won't actually have a value;
 				// use the fallback value instead.
 				return height == -1 ? _fallbackHeight : height;
 			}

@@ -2,9 +2,16 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IncludePreviousTfms)' == 'true'">$(TargetFrameworks);$(_MauiPreviousDotNetTfm);$(MauiPreviousPlatforms)</TargetFrameworks>
     <Nullable>enable</Nullable>
     <DefineConstants>$(DefineConstants);WEBVIEW2_MAUI</DefineConstants>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="!$(TargetFramework.StartsWith('netstandard'))">
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
+    <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -13,7 +20,7 @@
     <PackageId>GtkSharp.Maui.AspNetCore.Components.WebView</PackageId>
     <PackageTags>$(DefaultPackageTags);blazor;webview;aspnet</PackageTags>
     <PackageIconFile>$(MauiRootDirectory)Assets\aspnet-icon.png</PackageIconFile>
-    <Description>(MauiLinux is a fork of MAUI) Build .NET Multi-platform App UI (.NET MAUI) apps with Blazor web UI in the BlazorWebView control.</Description>
+    <Description>Build .NET Multi-platform App UI (.NET MAUI) apps with Blazor web UI in the BlazorWebView control.</Description>
   </PropertyGroup>
 
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />

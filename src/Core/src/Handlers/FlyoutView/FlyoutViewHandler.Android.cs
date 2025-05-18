@@ -118,16 +118,6 @@ namespace Microsoft.Maui.Handlers
 		void UpdateFlyout()
 		{
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-
-			// Once this issue has been taken care of
-			// https://github.com/dotnet/maui/issues/8456
-			// we can remove this code
-			if (VirtualView.Flyout.Handler?.MauiContext != null &&
-				VirtualView.Flyout.Handler.MauiContext != MauiContext)
-			{
-				VirtualView.Flyout.Handler.DisconnectHandler();
-			}
-
 			_ = VirtualView.Flyout.ToPlatform(MauiContext);
 
 			var newFlyoutView = VirtualView.Flyout.ToPlatform();
@@ -277,6 +267,9 @@ namespace Microsoft.Maui.Handlers
 			if (_detailViewFragment?.DetailView?.Handler?.PlatformView == null)
 				return;
 
+			// Important to create the layout views before setting the lock mode
+			LayoutViews();
+
 			switch (behavior)
 			{
 				case FlyoutBehavior.Disabled:
@@ -288,8 +281,6 @@ namespace Microsoft.Maui.Handlers
 					DrawerLayout.SetDrawerLockMode(VirtualView.IsGestureEnabled ? DrawerLayout.LockModeUnlocked : DrawerLayout.LockModeLockedClosed);
 					break;
 			}
-
-			LayoutViews();
 		}
 
 		protected override void ConnectHandler(View platformView)
@@ -307,6 +298,11 @@ namespace Microsoft.Maui.Handlers
 			{
 				dl.DrawerStateChanged -= OnDrawerStateChanged;
 				dl.ViewAttachedToWindow -= DrawerLayoutAttached;
+			}
+
+			if (VirtualView is IToolbarElement te)
+			{
+				te.Toolbar?.Handler?.DisconnectHandler();
 			}
 		}
 

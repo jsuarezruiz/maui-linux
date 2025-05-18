@@ -42,7 +42,7 @@
 [bool]$useInstalledDotNetCli = if (Test-Path variable:useInstalledDotNetCli) { $useInstalledDotNetCli } else { $true }
 
 # Enable repos to use a particular version of the on-line dotnet-install scripts.
-#    default URL: https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.ps1
+#    default URL: https://builds.dotnet.microsoft.com/dotnet/scripts/v1/dotnet-install.ps1
 [string]$dotnetInstallScriptVersion = if (Test-Path variable:dotnetInstallScriptVersion) { $dotnetInstallScriptVersion } else { 'v1' }
 
 # True to use global NuGet cache instead of restoring packages to repository-local directory.
@@ -67,6 +67,8 @@ $ErrorActionPreference = 'Stop'
 
 # True if the build is a product build
 [bool]$productBuild = if (Test-Path variable:productBuild) { $productBuild } else { $false }
+
+[String[]]$properties = if (Test-Path variable:properties) { $properties } else { @() }
 
 function Create-Directory ([string[]] $path) {
     New-Item -Path $path -Force -ItemType 'Directory' | Out-Null
@@ -252,7 +254,6 @@ function Retry($downloadBlock, $maxRetries = 5) {
       Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Unable to download file in $maxRetries attempts."
       break
     }
-
   }
 }
 
@@ -261,7 +262,7 @@ function GetDotNetInstallScript([string] $dotnetRoot) {
   if (!(Test-Path $installScript)) {
     Create-Directory $dotnetRoot
     $ProgressPreference = 'SilentlyContinue' # Don't display the console progress UI - it's a huge perf hit
-    $uri = "https://dotnet.microsoft.com/download/dotnet/scripts/$dotnetInstallScriptVersion/dotnet-install.ps1"
+    $uri = "https://builds.dotnet.microsoft.com/dotnet/scripts/$dotnetInstallScriptVersion/dotnet-install.ps1"
 
     Retry({
       Write-Host "GET $uri"
@@ -319,7 +320,7 @@ function InstallDotNet([string] $dotnetRoot,
   $variations += @($installParameters)
 
   $dotnetBuilds = $installParameters.Clone()
-  $dotnetbuilds.AzureFeed = "https://dotnetbuilds.azureedge.net/public"
+  $dotnetbuilds.AzureFeed = "https://ci.dot.net/public"
   $variations += @($dotnetBuilds)
 
   if ($runtimeSourceFeed) {
@@ -382,8 +383,8 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
 
   # If the version of msbuild is going to be xcopied,
   # use this version. Version matches a package here:
-  # https://dev.azure.com/dnceng/public/_artifacts/feed/dotnet-eng/NuGet/Microsoft.DotNet.Arcade.MSBuild.Xcopy/versions/17.8.5
-  $defaultXCopyMSBuildVersion = '17.8.5'
+  # https://dev.azure.com/dnceng/public/_artifacts/feed/dotnet-eng/NuGet/Microsoft.DotNet.Arcade.MSBuild.Xcopy/versions/17.12.0
+  $defaultXCopyMSBuildVersion = '17.12.0'
 
   if (!$vsRequirements) {
     if (Get-Member -InputObject $GlobalJson.tools -Name 'vs') {
@@ -422,7 +423,6 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
 
     InitializeVisualStudioEnvironmentVariables $vsInstallDir $vsMajorVersion
   } else {
-
     if (Get-Member -InputObject $GlobalJson.tools -Name 'xcopy-msbuild') {
       $xcopyMSBuildVersion = $GlobalJson.tools.'xcopy-msbuild'
       $vsMajorVersion = $xcopyMSBuildVersion.Split('.')[0]
@@ -502,6 +502,10 @@ function InitializeXCopyMSBuild([string]$packageVersion, [bool]$install) {
       Invoke-WebRequest "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/flat2/$packageName/$packageVersion/$packageName.$packageVersion.nupkg" -OutFile $packagePath
     })
 
+    if (!(Test-Path $packagePath)) {
+      Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "See https://dev.azure.com/dnceng/internal/_wiki/wikis/DNCEng%20Services%20Wiki/1074/Updating-Microsoft.DotNet.Arcade.MSBuild.Xcopy-WAS-RoslynTools.MSBuild-(xcopy-msbuild)-generation?anchor=troubleshooting for help troubleshooting issues with XCopy MSBuild"
+      throw
+    }
     Unzip $packagePath $packageDir
   }
 
@@ -649,7 +653,7 @@ function GetNuGetPackageCachePath() {
       $env:NUGET_PACKAGES = Join-Path $env:UserProfile '.nuget\packages\'
     } else {
       $env:NUGET_PACKAGES = Join-Path $RepoRoot '.packages\'
-      $env:RESTORENOCACHE = $true
+      $env:RESTORENOHTTPCACHE = $true
     }
   }
 
@@ -854,7 +858,7 @@ function MSBuild-Core() {
 
     # When running on Azure Pipelines, override the returned exit code to avoid double logging.
     # Skip this when the build is a child of the VMR orchestrator build.
-    if ($ci -and $env:SYSTEM_TEAMPROJECT -ne $null -and !$productBuild -and $properties -notlike "*DotNetBuildRepo=true*") {
+    if ($ci -and $env:SYSTEM_TEAMPROJECT -ne $null -and !$productBuild -and -not($properties -like "*DotNetBuildRepo=true*")) {
       Write-PipelineSetResult -Result "Failed" -Message "msbuild execution failed."
       # Exiting with an exit code causes the azure pipelines task to log yet another "noise" error
       # The above Write-PipelineSetResult will cause the task to be marked as failure without adding yet another error
@@ -896,7 +900,7 @@ function IsWindowsPlatform() {
 }
 
 function Get-Darc($version) {
-  $darcPath  = "$TempDir\darc\$(New-Guid)"
+  $darcPath  = "$TempDir\darc\$([guid]::NewGuid())"
   if ($version -ne $null) {
     & $PSScriptRoot\darc-init.ps1 -toolpath $darcPath -darcVersion $version | Out-Host
   } else {

@@ -1,8 +1,10 @@
-﻿using System.Linq;
+﻿using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.DeviceTests.TestCases;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
@@ -45,7 +47,26 @@ namespace Microsoft.Maui.DeviceTests
 			return -1;
 		}
 
+		Task<float> GetPlatformOpacity(EntryHandler entryHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformControl(entryHandler);
+				return (float)nativeView.Alpha;
+			});
+		}
+
+		Task<bool> GetPlatformIsVisible(EntryHandler entryHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformControl(entryHandler);
+				return !nativeView.Hidden;
+			});
+		}
+
 		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+		[Category(TestCategory.Entry)]
 		public class ScrollTests : ControlsHandlerTestBase
 		{
 			[Fact]
@@ -106,6 +127,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+		[Category(TestCategory.Entry)]
 		public class NextKeyboardTests : ControlsHandlerTestBase
 		{
 			void SetupNextBuilder()
@@ -270,6 +292,79 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.True(isFocused, $"{page} failed to focus the second entry DANG");
 			}
+		}
+
+		[Category(TestCategory.Entry)]
+		public class PlaceholderTests : ControlsHandlerTestBase
+		{
+			[Fact]
+			public async Task PlaceholderFontFamily()
+			{
+				EnsureHandlerCreated(builder =>
+				{
+					builder.ConfigureMauiHandlers(handlers =>
+					{
+						handlers.AddHandler(typeof(Entry), typeof(EntryHandler));
+					});
+				});
+
+				var expectedFontFamily = "Times New Roman";
+
+				var entry = new Entry
+				{
+					FontFamily = expectedFontFamily,
+					Placeholder = "This is a placeholder"
+				};
+
+				ContentPage contentPage = new ContentPage()
+				{
+					Content = new VerticalStackLayout()
+					{
+						entry
+					}
+				};
+
+				await CreateHandlerAndAddToWindow(contentPage, async () =>
+				{
+					await AssertEventually(() => entry.IsVisible);
+					var handler = CreateHandler<EntryHandler>(entry);
+					var platformControl = GetPlatformControl(handler);
+
+					var placeholderLabel = handler.PlatformView.Subviews.OfType<UIKit.UILabel>().FirstOrDefault();
+
+					Assert.Equal(expectedFontFamily, placeholderLabel?.Font?.FamilyName);
+				});
+			}
+		}
+
+		//src/Compatibility/Core/tests/iOS/FlowDirectionTests.cs
+		[Theory]
+		[InlineData(true, FlowDirection.LeftToRight, UITextAlignment.Left)]
+		[InlineData(true, FlowDirection.RightToLeft, UITextAlignment.Right)]
+		[InlineData(false, FlowDirection.LeftToRight, UITextAlignment.Left)]
+		[Description("The Entry's text alignment should match the expected alignment when FlowDirection is applied explicitly or implicitly")]
+		public async Task EntryAlignmentMatchesFlowDirection(bool isExplicit, FlowDirection flowDirection, UITextAlignment expectedAlignment)
+		{
+			var entry = new Entry { Text = "Checking flow direction", HorizontalTextAlignment = TextAlignment.Start };
+			var contentPage = new ContentPage { Title = "Flow Direction", Content = entry };
+
+			if (isExplicit)
+			{
+				entry.FlowDirection = flowDirection;
+			}
+			else
+			{
+				contentPage.FlowDirection = flowDirection;
+			}
+
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+			var nativeAlignment = await contentPage.Dispatcher.DispatchAsync(() =>
+			{
+				var textField = GetPlatformControl(handler);
+				return textField.TextAlignment;
+			});
+
+			Assert.Equal(expectedAlignment, nativeAlignment);
 		}
 	}
 }

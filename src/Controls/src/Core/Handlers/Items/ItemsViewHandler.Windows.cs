@@ -61,6 +61,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override void DisconnectHandler(ListViewBase platformView)
 		{
 			VirtualView.ScrollToRequested -= ScrollToRequested;
+			CleanUpCollectionViewSource(platformView);
+			_formsEmptyView?.Handler?.DisconnectHandler();
 			base.DisconnectHandler(platformView);
 		}
 
@@ -159,11 +161,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual void CleanUpCollectionViewSource()
 		{
+			CleanUpCollectionViewSource(ListViewBase);
+		}
+
+		private void CleanUpCollectionViewSource(ListViewBase platformView)
+		{
 			if (CollectionViewSource is not null)
 			{
-				if (CollectionViewSource.Source is ObservableItemTemplateCollection observableItemTemplateCollection)
+				if (CollectionViewSource.Source is IDisposable disposableItemTemplateCollection)
 				{
-					observableItemTemplateCollection.CleanUp();
+					disposableItemTemplateCollection.Dispose();
 				}
 
 				if (CollectionViewSource.Source is INotifyCollectionChanged incc)
@@ -178,7 +185,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// Remove all children inside the ItemsSource
 			if (VirtualView is not null)
 			{
-				foreach (var item in ListViewBase.GetChildren<ItemContentControl>())
+				foreach (var item in platformView.GetChildren<ItemContentControl>())
 				{
 					var element = item.GetVisualElement();
 					VirtualView.RemoveLogicalChild(element);
@@ -187,7 +194,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (VirtualView?.ItemsSource is null)
 			{
-				ListViewBase.ItemsSource = null;
+				platformView.ItemsSource = null;
 				return;
 			}
 		}
@@ -600,7 +607,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				default:
 					return elementBounds.Left < containerBounds.Right && elementBounds.Right > containerBounds.Left;
-			};
+			}
+			;
 		}
 
 		async void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
@@ -640,6 +648,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (args.Index >= ItemCount)
 				{
 					return null;
+				}
+
+				if (CollectionViewSource.IsSourceGrouped && args.GroupIndex >= 0)
+				{
+					if (args.GroupIndex >= CollectionViewSource.View.CollectionGroups.Count)
+					{
+						return null;
+					}
+
+					// CollectionGroups property is of type IObservableVector, but these objects should implement ICollectionViewGroup
+					var itemGroup = CollectionViewSource.View.CollectionGroups[args.GroupIndex] as ICollectionViewGroup;
+					if (itemGroup != null &&
+						args.Index < itemGroup.GroupItems.Count)
+					{
+						return itemGroup.GroupItems[args.Index];
+					}
 				}
 
 				return GetItem(args.Index);

@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Platform
 
 		public MauiWebView(WebViewHandler handler, Context context) : base(context)
 		{
-			_handler = handler ?? throw new ArgumentNullException("handler");
+			_handler = handler ?? throw new ArgumentNullException(nameof(handler));
 		}
 
 		void IWebViewDelegate.LoadHtml(string? html, string? baseUrl)
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Platform
 					_handler.CurrentNavigationEvent = WebNavigationEvent.NewPage;
 				}
 
-				if (url != null && !url.StartsWith('/') && !Uri.IsWellFormedUriString(url, UriKind.Absolute))
+				if (url is not null && !url.StartsWith('/') && !Uri.TryCreate(url, UriKind.Absolute, out _))
 				{
 					// URLs like "index.html" can't possibly load, so try "file:///android_asset/index.html"
 					url = AssetBaseUrl + url;

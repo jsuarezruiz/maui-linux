@@ -10,6 +10,8 @@ using Android.Graphics.Drawables;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.Core.Content;
+using AndroidX.Core.Graphics;
 using AndroidX.Fragment.App;
 using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.AppBar;
@@ -386,7 +388,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (Element.Children.Count > selectedIndex && selectedIndex >= 0)
 				Element.CurrentPage = Element.Children[selectedIndex];
 
-			SetIconColorFilter(tab, true);
+			SetIconColorFilter(Element.CurrentPage, tab, true);
 		}
 
 		void TeardownPage(Page page)
@@ -525,10 +527,10 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
-		protected virtual void SetTabIconImageSource(TabLayout.Tab tab, Drawable icon)
+		protected virtual void SetTabIconImageSource(Page page, TabLayout.Tab tab, Drawable icon)
 		{
 			tab.SetIcon(icon);
-			SetIconColorFilter(tab);
+			SetIconColorFilter(page, tab);
 		}
 
 		void SetTabIconImageSource(Page page, TabLayout.Tab tab)
@@ -537,7 +539,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				_context,
 				result =>
 				{
-					SetTabIconImageSource(tab, result?.Value);
+					SetTabIconImageSource(page, tab, result?.Value);
 				});
 		}
 
@@ -574,8 +576,30 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_currentBarBackground == Element.BarBackground)
 				return;
 
+			if (_currentBarBackground is GradientBrush oldGradientBrush)
+			{
+				oldGradientBrush.Parent = null;
+				oldGradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
+			}
+
 			_currentBarBackground = Element.BarBackground;
 
+			if (_currentBarBackground is GradientBrush newGradientBrush)
+			{
+				newGradientBrush.Parent = Element;
+				newGradientBrush.InvalidateGradientBrushRequested += OnBarBackgroundChanged;
+			}
+
+			RefreshBarBackground();
+		}
+
+		void OnBarBackgroundChanged(object sender, EventArgs e)
+		{
+			RefreshBarBackground();
+		}
+
+		void RefreshBarBackground()
+		{
 			if (IsBottomTabPlacement)
 				_bottomNavigationView.UpdateBackground(_currentBarBackground);
 			else
@@ -611,19 +635,11 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 			else
 			{
-				if (barItemColor is not null)
-					defaultColor = barItemColor.ToPlatform().ToArgb();
+				// UnSelected tabs TextColor
+				defaultColor = GetItemTextColor(barItemColor, _originalTabTextColors);
 
-				if (barItemColor is null && _originalTabTextColors is not null)
-					defaultColor = _originalTabTextColors.DefaultColor;
-
-				if (!defaultColor.HasValue)
-					return _originalTabTextColors;
-				else
-					checkedColor = defaultColor.Value;
-
-				if (barSelectedItemColor is not null)
-					checkedColor = barSelectedItemColor.ToPlatform().ToArgb();
+				// Selected tabs TextColor
+				checkedColor = GetItemTextColor(barSelectedItemColor, _originalTabTextColors);
 			}
 
 			_newTabTextColors = GetColorStateList(defaultColor.Value, checkedColor);
@@ -631,16 +647,17 @@ namespace Microsoft.Maui.Controls.Handlers
 			return _newTabTextColors;
 		}
 
+		int GetItemTextColor(Color customColor, ColorStateList originalColors)
+		{
+			return customColor?.ToPlatform().ToArgb() ?? originalColors?.DefaultColor ?? 0;
+		}
+
 		protected virtual ColorStateList GetItemIconTintColorState()
 		{
-			if (IsBottomTabPlacement)
+			if (_orignalTabIconColors is null)
 			{
-				if (_orignalTabIconColors is null)
-					_orignalTabIconColors = _bottomNavigationView.ItemIconTintList;
+				_orignalTabIconColors = IsBottomTabPlacement ? _bottomNavigationView.ItemIconTintList : _tabLayout.TabIconTint;
 			}
-			// this ensures that existing behavior doesn't change
-			else if (!IsBottomTabPlacement && BarSelectedItemColor != null && BarItemColor == null)
-				return null;
 
 			Color barItemColor = BarItemColor;
 			Color barSelectedItemColor = BarSelectedItemColor;
@@ -649,25 +666,27 @@ namespace Microsoft.Maui.Controls.Handlers
 				return _orignalTabIconColors;
 
 			if (_newTabIconColors != null)
+			{
 				return _newTabIconColors;
+			}
 
 			int defaultColor;
-
+			
 			if (barItemColor is not null)
 			{
 				defaultColor = barItemColor.ToPlatform().ToArgb();
 			}
 			else
 			{
-				var styledAttributes =
+				var styledAttributes = 
 					TintTypedArray.ObtainStyledAttributes(_context.Context, null, Resource.Styleable.NavigationBarView, Resource.Attribute.bottomNavigationStyle, 0);
 
 				try
 				{
-					var defaultColors = styledAttributes.GetColorStateList(Resource.Styleable.NavigationBarView_itemIconTint);
+					var defaultColors =  styledAttributes.GetColorStateList(Resource.Styleable.NavigationBarView_itemIconTint);
 					if (defaultColors is not null)
 					{
-						defaultColor = defaultColors.DefaultColor;
+						defaultColor = defaultColors.DefaultColor;		
 					}
 					else
 					{
@@ -676,7 +695,7 @@ namespace Microsoft.Maui.Controls.Handlers
 						// NavigationBarView_itemIconTint should always resolve
 						// But just in case, we'll just hard code to some defaults
 						// instead of leaving the application in a broken state
-						if (IsDarkTheme)
+						if(IsDarkTheme)
 							defaultColor = new Color(1, 1, 1, 0.6f).ToPlatform();
 						else
 							defaultColor = new Color(0, 0, 0, 0.6f).ToPlatform();
@@ -735,11 +754,11 @@ namespace Microsoft.Maui.Controls.Handlers
 				_bottomNavigationView.ItemIconTintList = GetItemIconTintColorState() ?? _orignalTabIconColors;
 			else
 			{
-				var colors = GetItemIconTintColorState() ?? _orignalTabIconColors;
 				for (int i = 0; i < _tabLayout.TabCount; i++)
 				{
 					TabLayout.Tab tab = _tabLayout.GetTabAt(i);
-					this.SetIconColorFilter(tab);
+					var page = Element.Children[i];
+					this.SetIconColorFilter(page, tab);
 				}
 			}
 		}
@@ -778,18 +797,18 @@ namespace Microsoft.Maui.Controls.Handlers
 				_tabLayout.TabTextColors = _currentBarTextColorStateList;
 		}
 
-		void SetIconColorFilter(TabLayout.Tab tab)
+		void SetIconColorFilter(Page page, TabLayout.Tab tab)
 		{
-			SetIconColorFilter(tab, _tabLayout.GetTabAt(_tabLayout.SelectedTabPosition) == tab);
+			SetIconColorFilter(page, tab, _tabLayout.GetTabAt(_tabLayout.SelectedTabPosition) == tab);
 		}
 
-		void SetIconColorFilter(TabLayout.Tab tab, bool selected)
+		void SetIconColorFilter(Page page, TabLayout.Tab tab, bool selected)
 		{
 			var icon = tab.Icon;
 			if (icon == null)
 				return;
 
-			var colors = GetItemIconTintColorState();
+			ColorStateList colors = (page.IconImageSource is FontImageSource fontImageSource && fontImageSource.Color is not null) ? null : GetItemIconTintColorState();
 			if (colors == null)
 				ADrawableCompat.SetTintList(icon, null);
 			else
@@ -965,7 +984,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			void TabLayout.IOnTabSelectedListener.OnTabUnselected(TabLayout.Tab tab)
 			{
-				_tabbedPageManager.SetIconColorFilter(tab, false);
+				_tabbedPageManager.SetIconColorFilter(_tabbedPageManager.Element.CurrentPage, tab, false);
 			}
 		}
 	}

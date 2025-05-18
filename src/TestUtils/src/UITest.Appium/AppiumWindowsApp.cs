@@ -10,6 +10,12 @@ namespace UITest.Appium
 		public AppiumWindowsApp(Uri remoteAddress, IConfig config)
 			: base(new WindowsDriver(remoteAddress, GetOptions(config)), config)
 		{
+			_commandExecutor.AddCommandGroup(new AppiumWindowsAlertActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumWindowsContextMenuActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumWindowsStepperActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumWindowsThemeChangeAction());
+			_commandExecutor.AddCommandGroup(new AppiumWindowsVirtualKeyboardActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumWindowsSpecificActions(this));
 		}
 
 		public override ApplicationState AppState
@@ -24,6 +30,10 @@ namespace UITest.Appium
 				catch (NoSuchWindowException)
 				{
 					return ApplicationState.NotRunning;
+				}
+				catch (Exception)
+				{
+					return ApplicationState.Unknown;
 				}
 			}
 		}

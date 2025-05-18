@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CoreGraphics;
+using CoreImage;
 using Foundation;
 using ImageIO;
 using Microsoft.Maui.Graphics;
@@ -20,24 +21,40 @@ namespace Microsoft.Maui
 			var font = fontManager.GetFont(imageSource.Font);
 			var color = (imageSource.Color ?? Colors.White).ToPlatform();
 			var glyph = (NSString)imageSource.Glyph;
-#pragma warning disable CS8604
+
+			if (string.IsNullOrWhiteSpace(imageSource.Glyph))
+			{
+				return null;
+			}
+
 			var attString = new NSAttributedString(glyph, font, color);
 			var imagesize = glyph.GetSizeUsingAttributes(attString.GetUIKitAttributes(0, out _)!);
-#pragma warning restore CS8604
-			UIGraphics.BeginImageContextWithOptions(imagesize, false, scale);
-			var ctx = new NSStringDrawingContext();
 
-			var boundingRect = attString.GetBoundingRect(imagesize, 0, ctx);
-			attString.DrawString(new CGRect(
-				imagesize.Width / 2 - boundingRect.Size.Width / 2,
-				imagesize.Height / 2 - boundingRect.Size.Height / 2,
-				imagesize.Width,
-				imagesize.Height));
+			if (imagesize.Width <= 0 || imagesize.Height <= 0)
+			{
+				return null;
+			}
 
-			var image = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
+			var renderer = new UIGraphicsImageRenderer(imagesize, new UIGraphicsImageRendererFormat()
+			{
+				Opaque = false,
+				Scale = scale,
+			});
 
-			return image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+			return renderer.CreateImage((context) =>
+			{
+				var ctx = new NSStringDrawingContext();
+
+				var boundingRect = attString.GetBoundingRect(imagesize, 0, ctx);
+				attString.DrawString(new CGRect(
+					imagesize.Width / 2 - boundingRect.Size.Width / 2,
+					imagesize.Height / 2 - boundingRect.Size.Height / 2,
+					imagesize.Width,
+					imagesize.Height));
+
+				// Using UIRenderingMode.Automatic when the FontImageSource color is null (where 'Automatic' adapts based on the context and properly applies color) 
+				// and UIRenderingMode.AlwaysOriginal when the FontImageSource color is specified ensures the given color is applied correctly
+			}).ImageWithRenderingMode(imageSource.Color == null ? UIImageRenderingMode.Automatic : UIImageRenderingMode.AlwaysOriginal);
 		}
 
 		internal static UIImage? GetPlatformImage(this IFileImageSource imageSource)
@@ -146,10 +163,32 @@ namespace Microsoft.Maui
 				if (cgimage is null)
 					throw new InvalidOperationException("Unable to create CGImage from CGImageSource.");
 
-				image = new UIImage(cgimage, scale, UIImageOrientation.Up);
+				image = new UIImage(cgimage, scale, ToUIImageOrientation(cgImageSource));
 			}
 
 			return image;
 		}
+
+		static UIImageOrientation ToUIImageOrientation(CGImageSource cgImageSource)
+		{
+			var props = cgImageSource.GetProperties(0);
+			if (props is null || props.Orientation is null)
+				return UIImageOrientation.Up;
+
+			return ToUIImageOrientation(props.Orientation.Value);
+		}
+
+		static UIImageOrientation ToUIImageOrientation(CIImageOrientation cgOrient) => cgOrient switch
+		{
+			CIImageOrientation.TopLeft => UIImageOrientation.Up,
+			CIImageOrientation.TopRight => UIImageOrientation.UpMirrored,
+			CIImageOrientation.BottomRight => UIImageOrientation.Down,
+			CIImageOrientation.BottomLeft => UIImageOrientation.DownMirrored,
+			CIImageOrientation.LeftTop => UIImageOrientation.LeftMirrored,
+			CIImageOrientation.RightTop => UIImageOrientation.Right,
+			CIImageOrientation.RightBottom => UIImageOrientation.RightMirrored,
+			CIImageOrientation.LeftBottom => UIImageOrientation.Left,
+			_ => throw new ArgumentOutOfRangeException(nameof(cgOrient)),
+		};
 	}
 }

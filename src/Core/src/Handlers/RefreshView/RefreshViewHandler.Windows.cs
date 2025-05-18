@@ -14,10 +14,14 @@ namespace Microsoft.Maui.Handlers
 
 		protected override RefreshContainer CreatePlatformView()
 		{
-			return new RefreshContainer
+			var refreshControl = new RefreshContainer
 			{
-				PullDirection = RefreshPullDirection.TopToBottom
+				PullDirection = RefreshPullDirection.TopToBottom,
+				Content = new ContentPanel()
 			};
+
+			SetRefreshColorCallback(refreshControl);
+			return refreshControl;
 		}
 
 		protected override void ConnectHandler(RefreshContainer nativeView)
@@ -34,6 +38,12 @@ namespace Microsoft.Maui.Handlers
 			nativeView.RefreshRequested -= OnRefresh;
 
 			CompleteRefresh();
+
+			if (nativeView.Content is ContentPanel contentPanel)
+			{
+				contentPanel.Content = null;
+				contentPanel.CrossPlatformLayout = null;
+			}
 
 			base.DisconnectHandler(nativeView);
 		}
@@ -63,8 +73,27 @@ namespace Microsoft.Maui.Handlers
 
 		static void UpdateContent(IRefreshViewHandler handler)
 		{
-			handler.PlatformView.Content =
-				handler.VirtualView.Content?.ToPlatform(handler.MauiContext!);
+			IView? content;
+
+			if (handler.VirtualView is IContentView cv && cv.PresentedContent is IView view)
+			{
+				content = view;
+			}
+			else
+			{
+				content = handler.VirtualView.Content;
+			}
+
+			var platformContent = content?.ToPlatform(handler.MauiContext!);
+			if (handler.PlatformView.Content is ContentPanel contentPanel)
+			{
+				contentPanel.Content = platformContent;
+				contentPanel.CrossPlatformLayout = (handler.VirtualView as ICrossPlatformLayout);
+			}
+			else
+			{
+				handler.PlatformView.Content = platformContent;
+			}
 		}
 
 		static void UpdateRefreshColor(IRefreshViewHandler handler)
@@ -122,6 +151,20 @@ namespace Microsoft.Maui.Handlers
 				_refreshCompletionDeferral.Dispose();
 				_refreshCompletionDeferral = null;
 			}
+		}
+
+		void SetRefreshColorCallback(RefreshContainer refreshControl)
+		{
+			long callbackToken = 0;
+			callbackToken = refreshControl.RegisterPropertyChangedCallback(RefreshContainer.VisualizerProperty,
+				(_, __) =>
+				{
+					if (refreshControl?.Visualizer == null)
+						return;
+
+					UpdateRefreshColor(this);
+					refreshControl.UnregisterPropertyChangedCallback(RefreshContainer.VisualizerProperty, callbackToken);
+				});
 		}
 	}
 }

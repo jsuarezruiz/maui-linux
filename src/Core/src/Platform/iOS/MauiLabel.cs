@@ -66,27 +66,12 @@ namespace Microsoft.Maui.Platform
 			return rect;
 		}
 
-		public override void InvalidateIntrinsicContentSize()
-		{
-			base.InvalidateIntrinsicContentSize();
-
-			if (Frame.Width == 0 && Frame.Height == 0)
-			{
-				// The Label hasn't actually been laid out on screen yet; no reason to request a layout
-				return;
-			}
-
-			if (!Frame.Size.IsCloseTo(AddInsets(IntrinsicContentSize), (nfloat)0.001))
-			{
-				// The text or its attributes have changed enough that the size no longer matches the set Frame. It's possible
-				// that the Label needs to be laid out again at a different size, so we request that the parent do so. 
-				Superview?.SetNeedsLayout();
-			}
-		}
-
 		public override SizeF SizeThatFits(SizeF size)
 		{
-			var requestedSize = base.SizeThatFits(size);
+			// Prior to calculating the text size, reduce the padding, and then add the padding back in the AddInsets method.
+			var adjustedWidth = size.Width - TextInsets.Left - TextInsets.Right;
+			var adjustedHeight = size.Height - TextInsets.Top - TextInsets.Bottom;
+			var requestedSize = base.SizeThatFits(new SizeF(adjustedWidth, adjustedHeight));
 
 			// Let's be sure the label is not larger than the container
 			return AddInsets(new Size()

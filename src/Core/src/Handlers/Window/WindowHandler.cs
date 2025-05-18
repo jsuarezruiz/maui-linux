@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IWindow.MaximumHeight)] = MapMaximumHeight,
 			[nameof(IWindow.MinimumWidth)] = MapMinimumWidth,
 			[nameof(IWindow.MinimumHeight)] = MapMinimumHeight,
+			[nameof(IWindow.TitleBar)] = MapTitleBar,
 #endif
 #if ANDROID || WINDOWS || TIZEN || GTK
 			[nameof(IToolbarElement.Toolbar)] = MapToolbar,
@@ -38,7 +39,7 @@ namespace Microsoft.Maui.Handlers
 #endif
 #if WINDOWS
 			[nameof(IWindow.FlowDirection)] = MapFlowDirection,
-			[nameof(IWindow.TitleBarDragRectangles)] = MapTitleBarDragRectangles
+			[nameof(IWindow.TitleBarDragRectangles)] = MapTitleBarDragRectangles,
 #endif
 		};
 

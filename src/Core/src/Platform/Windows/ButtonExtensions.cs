@@ -160,9 +160,6 @@ namespace Microsoft.Maui.Platform
 		{
 			if (platformButton.GetContent<WImage>() is WImage nativeImage)
 			{
-				// Stretch to fill
-				nativeImage.Stretch = UI.Xaml.Media.Stretch.Uniform;
-
 				// If we're a CanvasImageSource (font image source), we need to explicitly set the image height
 				// to the desired size of the font, otherwise it will be stretched to the available space
 				if (nativeImageSource is CanvasImageSource canvas)
@@ -201,17 +198,29 @@ namespace Microsoft.Maui.Platform
 			where T : FrameworkElement
 		{
 			if (platformButton.Content is null)
+			{
 				return null;
+			}
 
 			if (platformButton.Content is T t)
+			{
 				return t;
+			}
 
 			if (platformButton.Content is Panel panel)
 			{
-				foreach (var child in panel.Children)
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons. MauiPanel might not be used everywhere though.
+				var children = panel is MauiPanel mauiPanel
+					? mauiPanel.CachedChildren
+					: panel.Children;
+#pragma warning restore RS0030 // Do not use banned APIs
+
+				foreach (var child in children)
 				{
 					if (child is T c)
+					{
 						return c;
+					}
 				}
 			}
 

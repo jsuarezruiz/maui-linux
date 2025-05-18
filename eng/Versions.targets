@@ -1,27 +1,19 @@
 <Project>
  <PropertyGroup>
     <NightlyTag>nightly</NightlyTag>
-    <RegexTag>[a-z]+\.[0-9]</RegexTag>
  </PropertyGroup>
- <PropertyGroup>
-    <GitBranch Condition="'$(SYSTEM_PULLREQUEST_TARGETBRANCH)' != ''">$(SYSTEM_PULLREQUEST_TARGETBRANCH)</GitBranch>
-    <GitBranch Condition="'$(SYSTEM_PULLREQUEST_TARGETBRANCH)' == '' and '$(BUILD_SOURCEBRANCHNAME)' != ''">$(BUILD_SOURCEBRANCHNAME)</GitBranch>
-  </PropertyGroup>
 
   <PropertyGroup>
     <CoreCompileDependsOn>
       SetVersions;
-      VersionInfoReport;
       $(CoreCompileDependsOn);
     </CoreCompileDependsOn>
     <GenerateNuspecDependsOn>
       SetVersions;
-      VersionInfoReport;
       $(GenerateNuspecDependsOn);
     </GenerateNuspecDependsOn>
     <GetPackageVersionDependsOn>
       SetVersions;
-      VersionInfoReport;
       $(GetPackageVersionDependsOn);
     </GetPackageVersionDependsOn>
     <SetVersionsBefore>
@@ -29,24 +21,15 @@
       $(SetVersionsBefore);
     </SetVersionsBefore>
     <SetVersionsDependsOn>
-      GitInfo;
-      GitVersion;
       $(SetVersionsDependsOn);
     </SetVersionsDependsOn>
-    <SetGitInfoPropsBefore>
-      GitInfo;
-      GitVersion;
-    </SetGitInfoPropsBefore>
   </PropertyGroup>
 
-  <Target Name="SetGitInfoProps" BeforeTargets="$(SetGitInfoPropsBefore)">
-    <PropertyGroup>
-      <GitDefaultBranch>main</GitDefaultBranch>
-      <GitIgnoreBranchVersion>true</GitIgnoreBranchVersion>
-      <GitIgnoreTagVersion>true</GitIgnoreTagVersion>
-    </PropertyGroup>
-  </Target>
-  <Target Name="SetVersions" BeforeTargets="$(SetVersionsBefore)" DependsOnTargets="$(SetVersionsDependsOn)" Returns="$(Version)">
+  <Target Name="SetVersions"
+          BeforeTargets="$(SetVersionsBefore)"
+          DependsOnTargets="$(SetVersionsDependsOn)"
+          Returns="$(Version)">
+
     <PropertyGroup>
       <GitTag Condition="$(GITHUB_REF_TYPE) == 'tag'">$(GITHUB_REF_NAME)</GitTag>
       <SemVerLabel>$([System.Text.RegularExpressions.Regex]::Match($(GitTag), $(RegexTag)))</SemVerLabel>
@@ -57,13 +40,13 @@
       <GitSemVerLabel  Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'">$(NightlyTag)</GitSemVerLabel>
       <GitSemVerDashLabel Condition="'$(GitSemVerLabel)' != ''" >-$(GitSemVerLabel)</GitSemVerDashLabel>
     </PropertyGroup>
-    <ItemGroup>
-      <VersionMetadata Condition="'$(GitSemVerDashLabel)' == '' and '$(GitCommits)' != ''" Include="$(GitCommits)" />
 
-      <VersionMetadata Condition="$(CI) and '$(BUILD_REASON)' == 'PullRequest'"
+    <ItemGroup>
+
+      <VersionMetadata Condition="'$(CI)' == 'true' and '$(BUILD_REASON)' == 'PullRequest'"
                        Include="pr.$(SYSTEM_PULLREQUEST_PULLREQUESTNUMBER)"/>
 
-      <VersionMetadata Condition="'$(GitCommit)' != ''"  Include="sha.$(GitCommit)"/>
+      <VersionMetadata Condition="'$(SourceLinkId)' != ''"  Include="sha.$(SourceLinkId)"/>
 
       <VersionMetadata Condition="$(CI) and '$(BUILD_BUILDID)' != ''"
                        Include="azdo.$(BUILD_BUILDID)"/>
@@ -92,38 +75,19 @@
     </PropertyGroup>
 
     <PropertyGroup>
-      <InformationalVersion>$(PackageVersion)</InformationalVersion>
-      <FileVersion>$(Version).$(GitCommits)</FileVersion>
-      <AssemblyVersion>1.0.0.0</AssemblyVersion> <!-- THIS SHALL REMAIN 1.0.0.0 -->
+      <_SkipUpdateBuildNumber Condition="'$(SampleProject)' == 'true' or '$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe' or '$(AndroidApplication)' == 'true' or '$(MauiTestProject)' == 'true' or '$(IsPackable)' == 'false' or '_SkipUpdateBuildNumber' == 'true' ">true</_SkipUpdateBuildNumber>
+      <_UpdateBuildNumber Condition="'$(CI)' == 'true' and '$(BUILD_BUILDNUMBER)' != '$(PackageVersion)' AND '$(_SkipUpdateBuildNumber)' != 'true'">$(PackageVersion)</_UpdateBuildNumber>
     </PropertyGroup>
 
-    <ItemGroup>
-      <AssemblyAttribute Include="System.Reflection.AssemblyMetadata">
-        <_Parameter1>Version</_Parameter1>
-        <_Parameter2>1.0.0.0</_Parameter2> <!-- THIS SHALL REMAIN 1.0.0.0 -->
-      </AssemblyAttribute>
-      <AssemblyAttribute Include="System.Reflection.AssemblyMetadata">
-        <_Parameter1>PackageVersion</_Parameter1>
-        <_Parameter2>$(PackageVersion)</_Parameter2>
-      </AssemblyAttribute>
-    </ItemGroup>
+    <Error Condition="'$(_UpdateBuildNumber)' == '1.0.0'" Text="Unexpected _UpdateBuildNumber: '$(_UpdateBuildNumber)'" />
 
-    <Message Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'" Importance="high" Text="##vso[build.addbuildtag]$(NightlyTag)"/>
-    <Message Condition="$(CI) and '$(BUILD_BUILDNUMBER)' != '$(PackageVersion)'" Importance="high" Text="##vso[build.updatebuildnumber]$(PackageVersion)"/>
-  </Target>
+    <PropertyGroup Condition="'$(_UpdateBuildNumber)' != ''">
+      <_UpdateBuildNumber Condition="'@(VersionMetadata)' != ''">$(_UpdateBuildNumber)+@(VersionMetadata -> '%(Identity)', '.')</_UpdateBuildNumber>
+    </PropertyGroup>
 
-  <Target Name="VersionInfoReport" DependsOnTargets="SetVersions">
-   <ItemGroup>
-    <Message Importance="$(GitInfoReportImportance)" Text="Version Info:
-  AssemblyVersion:        $(AssemblyVersion)
-  FileVersion:            $(FileVersion)
-  InformationalVersion:   $(InformationalVersion)
-  PackageVersion:         $(PackageVersion)
-  Version:        $(Version)
-  VersionPrefix:  $(VersionPrefix)
-  VersionSuffix:  $(VersionSuffix)
-"/>
-   </ItemGroup>
+    <Message Condition="'$(CI)' == 'true' and '$(BUILD_REASON)' == 'Schedule'" Importance="high" Text="##vso[build.addbuildtag]$(NightlyTag)"/>
+    <Message Condition="'$(_UpdateBuildNumber)' != ''" Importance="high" Text="##vso[build.updatebuildnumber]$(_UpdateBuildNumber)"/>
+
   </Target>
 
 </Project>

@@ -43,6 +43,8 @@ namespace Microsoft.Maui.Platform
 				separator = "-";
 			else if (format.Contains(' ', StringComparison.CurrentCultureIgnoreCase))
 				separator = " ";
+			else if (format.Contains('.', StringComparison.CurrentCultureIgnoreCase))
+				separator = ".";
 			else
 				separator = string.Empty;
 
@@ -84,7 +86,7 @@ namespace Microsoft.Maui.Platform
 				var day = format.Count(x => x == 'd');
 
 				if (day == 3)
-					return "{day.integer} {dayofweek.abbreviated}";
+					return "{dayofweek.abbreviated}";
 				else if (day == 4)
 					return "{dayofweek.full}";
 				else

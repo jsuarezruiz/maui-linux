@@ -1,0 +1,100 @@
+﻿using System;
+using Gtk;
+using Microsoft.Maui.Graphics;
+// using Microsoft.UI.Xaml;
+// using Microsoft.UI.Xaml.Controls;
+// using Microsoft.UI.Xaml.Media;
+// using WBrush = Microsoft.UI.Xaml.Media.Brush;
+
+namespace Microsoft.Maui.Platform
+{
+	public static class RadioButtonExtensions
+	{
+		public static void UpdateIsChecked(this RadioButton platformRadioButton, IRadioButton radioButton)
+		{
+			platformRadioButton.Active = radioButton.IsChecked;
+		}
+
+		private static readonly string[] _backgroundColorKeys =
+		{
+			"RadioButtonBackground",
+			"RadioButtonBackgroundPointerOver",
+			"RadioButtonBackgroundPressed",
+			"RadioButtonBackgroundDisabled"
+		};
+
+		[MissingMapper]
+		public static void UpdateBackground(this RadioButton platformRadioButton, IRadioButton button)
+		{
+			// if (button.Background is SolidPaint solidPaint)
+			// {
+			// 	UpdateColors(platformRadioButton.Resources, _backgroundColorKeys, solidPaint.ToPlatform());
+
+			// 	platformRadioButton.RefreshThemeResources();
+			// }
+		}
+
+		private static readonly string[] _foregroundColorKeys =
+		{
+			"RadioButtonForeground",
+			"RadioButtonForegroundPointerOver",
+			"RadioButtonForegroundPressed",
+			"RadioButtonForegroundDisabled"
+		};
+
+		[MissingMapper]
+		public static void UpdateTextColor(this RadioButton platformRadioButton, ITextStyle button)
+		{
+			// UpdateColors(platformRadioButton.Resources, _foregroundColorKeys, button.TextColor?.ToPlatform());
+
+			// platformRadioButton.RefreshThemeResources();
+		}
+
+		public static void UpdateContent(this RadioButton platformRadioButton, IRadioButton radioButton)
+		{
+			_ = radioButton.Handler?.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
+			if (radioButton is { PresentedContent: IView view })
+				platformRadioButton.Label = $"{view.ToPlatform(radioButton.Handler.MauiContext)}";
+			// else
+			// 	platformRadioButton.Label = $"{radioButton.Content}";
+		}
+
+		private static readonly string[] _borderColorKeys =
+		{
+			"RadioButtonBorderBrush",
+			"RadioButtonBorderBrushPointerOver",
+			"RadioButtonBorderBrushPressed",
+			"RadioButtonBorderBrushDisabled"
+		};
+
+		[MissingMapper]
+		public static void UpdateStrokeColor(this RadioButton platformRadioButton, IRadioButton radioButton)
+		{
+			// UpdateColors(platformRadioButton.Resources, _borderColorKeys, radioButton.StrokeColor?.ToPlatform());
+
+			// platformRadioButton.RefreshThemeResources();
+		}
+
+		// [MissingMapper]
+		// static void UpdateColors(ResourceDictionary resource, string[] keys, WBrush? brush)
+		// {
+		// 	if (brush is null)
+		// 		resource.RemoveKeys(keys);
+		// 	else
+		// 		resource.SetValueForAllKey(keys, brush);
+		// }
+
+		[MissingMapper]
+		public static void UpdateStrokeThickness(this RadioButton nativeRadioButton, IRadioButton radioButton)
+		{
+			// nativeRadioButton.BorderThickness = radioButton.StrokeThickness <= 0 ? WinUIHelpers.CreateThickness(3) : WinUIHelpers.CreateThickness(radioButton.StrokeThickness);
+		}
+
+		[MissingMapper]
+		public static void UpdateCornerRadius(this RadioButton nativeRadioButton, IRadioButton radioButton)
+		{
+			// nativeRadioButton.CornerRadius = WinUIHelpers.CreateCornerRadius(radioButton.CornerRadius);
+		}
+	}
+}

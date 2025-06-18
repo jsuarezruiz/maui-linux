@@ -15,13 +15,11 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(RadioButton platformView)
 		{
 			platformView.Toggled += OnClicked;
-			// base.ConnectHandler(platformView);
 		}
 
 		protected override void DisconnectHandler(RadioButton platformView)
 		{
 			platformView.Toggled -= OnClicked;
-			// base.DisconnectHandler(platformView);
 		}
 
 		[MissingMapper]
@@ -31,14 +29,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (handler.PlatformView is RadioButton rb)
 				rb.UpdateIsChecked(radioButton);
-			// handler.PlatformView?.UpdateIsChecked(radioButton);
 		}
 
 		public static void MapContent(IRadioButtonHandler handler, IRadioButton radioButton)
 		{
 			if (handler.PlatformView is RadioButton rb)
 				rb.UpdateContent(radioButton);
-			// handler.PlatformView?.UpdateContent(radioButton);
 		}
 
 		public static void MapTextColor(IRadioButtonHandler handler, ITextStyle textStyle)

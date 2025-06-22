@@ -33,7 +33,7 @@
                                 </RadioButton>
 
                             </On>
-                            <On Platform="Android,Tizen,WPF">
+                            <On Platform="Android,Tizen,WPF,GTK">
                                 <RadioButton Content="Can't use View for Content on this platform, so just plain old text"></RadioButton>
                             </On>
                         </OnPlatform>

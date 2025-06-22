@@ -22,8 +22,11 @@ namespace Microsoft.Maui.Handlers
 			platformView.Toggled -= OnClicked;
 		}
 
-		[MissingMapper]
-		public static void MapBackground(IRadioButtonHandler handler, IRadioButton radioButton) { }
+		public static void MapBackground(IRadioButtonHandler handler, IRadioButton radioButton)
+		{
+			if (handler.PlatformView is RadioButton rb)
+				rb.UpdateBackground(radioButton);
+		}
 
 		public static void MapIsChecked(IRadioButtonHandler handler, IRadioButton radioButton)
 		{

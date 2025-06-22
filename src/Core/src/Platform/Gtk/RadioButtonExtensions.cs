@@ -1,10 +1,6 @@
 ﻿using System;
 using Gtk;
 using Microsoft.Maui.Graphics;
-// using Microsoft.UI.Xaml;
-// using Microsoft.UI.Xaml.Controls;
-// using Microsoft.UI.Xaml.Media;
-// using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui.Platform
 {
@@ -23,32 +19,48 @@ namespace Microsoft.Maui.Platform
 			"RadioButtonBackgroundDisabled"
 		};
 
-		[MissingMapper]
 		public static void UpdateBackground(this RadioButton platformRadioButton, IRadioButton button)
 		{
-			// if (button.Background is SolidPaint solidPaint)
-			// {
-			// 	UpdateColors(platformRadioButton.Resources, _backgroundColorKeys, solidPaint.ToPlatform());
+			// Ref: https://github.com/jsuarezruiz/maui-linux/blob/ce1c06f1f05422a70c150276a82ad88d3b572198/src/Core/src/Platform/Gtk/ViewExtensions.cs#L15-L69
 
-			// 	platformRadioButton.RefreshThemeResources();
-			// }
+			var color = button.Background?.BackgroundColor;
+
+			if (button.Background is { } paint)
+				color = paint.ToColor();
+
+			var gradientCss = button.Background.ToCss();
+
+			var disposePixbuf = false;
+			var pixbuf = gradientCss == null ? button.Background?.ToPixbuf(out disposePixbuf) : default;
+
+			// create a temporary file 
+			var picCss = default(string);
+			var tempFile = pixbuf?.TempFileFor();
+
+			// use the tempfile as url in css
+			if (tempFile is not null)
+				picCss = $"url('{tempFile}')";
+
+			if (color is null && (gradientCss is null || picCss is null))
+				return;
+
+			if (picCss is not null)
+				platformRadioButton.SetStyleValue(picCss, "background-image");
+
+			if (gradientCss is not null)
+				platformRadioButton.SetStyleValue(gradientCss, "background");
+			else
+				platformRadioButton.SetBackgroundColor(color);
+
+			// Gtk.CssProvider translates the file of url() into Base64, so the file can safely deleted:
+			tempFile?.Dispose();
+
+			if (disposePixbuf)
+				pixbuf?.Dispose();
 		}
-
-		private static readonly string[] _foregroundColorKeys =
-		{
-			"RadioButtonForeground",
-			"RadioButtonForegroundPointerOver",
-			"RadioButtonForegroundPressed",
-			"RadioButtonForegroundDisabled"
-		};
 
 		[MissingMapper]
-		public static void UpdateTextColor(this RadioButton platformRadioButton, ITextStyle button)
-		{
-			// UpdateColors(platformRadioButton.Resources, _foregroundColorKeys, button.TextColor?.ToPlatform());
-
-			// platformRadioButton.RefreshThemeResources();
-		}
+		public static void UpdateTextColor(this RadioButton platformRadioButton, ITextStyle button) { }
 
 		public static void UpdateContent(this RadioButton platformRadioButton, IRadioButton radioButton)
 		{
@@ -56,45 +68,17 @@ namespace Microsoft.Maui.Platform
 
 			if (radioButton is { PresentedContent: IView view })
 				platformRadioButton.Label = $"{view.ToPlatform(radioButton.Handler.MauiContext)}";
-			// else
-			// 	platformRadioButton.Label = $"{radioButton.Content}";
-		}
-
-		private static readonly string[] _borderColorKeys =
-		{
-			"RadioButtonBorderBrush",
-			"RadioButtonBorderBrushPointerOver",
-			"RadioButtonBorderBrushPressed",
-			"RadioButtonBorderBrushDisabled"
-		};
-
-		[MissingMapper]
-		public static void UpdateStrokeColor(this RadioButton platformRadioButton, IRadioButton radioButton)
-		{
-			// UpdateColors(platformRadioButton.Resources, _borderColorKeys, radioButton.StrokeColor?.ToPlatform());
-
-			// platformRadioButton.RefreshThemeResources();
-		}
-
-		// [MissingMapper]
-		// static void UpdateColors(ResourceDictionary resource, string[] keys, WBrush? brush)
-		// {
-		// 	if (brush is null)
-		// 		resource.RemoveKeys(keys);
-		// 	else
-		// 		resource.SetValueForAllKey(keys, brush);
-		// }
-
-		[MissingMapper]
-		public static void UpdateStrokeThickness(this RadioButton nativeRadioButton, IRadioButton radioButton)
-		{
-			// nativeRadioButton.BorderThickness = radioButton.StrokeThickness <= 0 ? WinUIHelpers.CreateThickness(3) : WinUIHelpers.CreateThickness(radioButton.StrokeThickness);
+			else
+				platformRadioButton.Label = $"{radioButton.Content}";
 		}
 
 		[MissingMapper]
-		public static void UpdateCornerRadius(this RadioButton nativeRadioButton, IRadioButton radioButton)
-		{
-			// nativeRadioButton.CornerRadius = WinUIHelpers.CreateCornerRadius(radioButton.CornerRadius);
-		}
+		public static void UpdateStrokeColor(this RadioButton platformRadioButton, IRadioButton radioButton) { }
+
+		[MissingMapper]
+		public static void UpdateStrokeThickness(this RadioButton nativeRadioButton, IRadioButton radioButton) { }
+
+		[MissingMapper]
+		public static void UpdateCornerRadius(this RadioButton nativeRadioButton, IRadioButton radioButton) { }
 	}
 }

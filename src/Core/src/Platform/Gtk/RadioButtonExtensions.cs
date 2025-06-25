@@ -21,42 +21,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this RadioButton platformRadioButton, IRadioButton button)
 		{
-			// Ref: https://github.com/jsuarezruiz/maui-linux/blob/ce1c06f1f05422a70c150276a82ad88d3b572198/src/Core/src/Platform/Gtk/ViewExtensions.cs#L15-L69
-
-			var color = button.Background?.BackgroundColor;
-
-			if (button.Background is { } paint)
-				color = paint.ToColor();
-
-			var gradientCss = button.Background.ToCss();
-
-			var disposePixbuf = false;
-			var pixbuf = gradientCss == null ? button.Background?.ToPixbuf(out disposePixbuf) : default;
-
-			// create a temporary file 
-			var picCss = default(string);
-			var tempFile = pixbuf?.TempFileFor();
-
-			// use the tempfile as url in css
-			if (tempFile is not null)
-				picCss = $"url('{tempFile}')";
-
-			if (color is null && (gradientCss is null || picCss is null))
-				return;
-
-			if (picCss is not null)
-				platformRadioButton.SetStyleValue(picCss, "background-image");
-
-			if (gradientCss is not null)
-				platformRadioButton.SetStyleValue(gradientCss, "background");
-			else
-				platformRadioButton.SetBackgroundColor(color);
-
-			// Gtk.CssProvider translates the file of url() into Base64, so the file can safely deleted:
-			tempFile?.Dispose();
-
-			if (disposePixbuf)
-				pixbuf?.Dispose();
+			platformRadioButton.UpdateBackground(button);
 		}
 
 		[MissingMapper]

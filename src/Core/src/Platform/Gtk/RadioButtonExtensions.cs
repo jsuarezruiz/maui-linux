@@ -11,14 +11,6 @@ namespace Microsoft.Maui.Platform
 			platformRadioButton.Active = radioButton.IsChecked;
 		}
 
-		private static readonly string[] _backgroundColorKeys =
-		{
-			"RadioButtonBackground",
-			"RadioButtonBackgroundPointerOver",
-			"RadioButtonBackgroundPressed",
-			"RadioButtonBackgroundDisabled"
-		};
-
 		public static void UpdateBackground(this RadioButton platformRadioButton, IRadioButton button)
 		{
 			platformRadioButton.UpdateBackground(button);

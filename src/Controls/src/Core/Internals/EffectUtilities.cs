@@ -15,7 +15,9 @@ namespace Microsoft.Maui.Controls.Internals
 				controller.EffectControlProvider = null;
 
 			controller = newElement;
-			controller?.EffectControlProvider = self;
+
+			if (controller != null)
+				controller.EffectControlProvider = self;
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/EffectUtilities.xml" path="//Member[@MemberName='UnregisterEffectControlProvider']/Docs/*" />

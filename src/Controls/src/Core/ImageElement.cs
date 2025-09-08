@@ -137,8 +137,7 @@ namespace Microsoft.Maui.Controls
 		static void ImageSourceChanged(BindableObject bindable, ImageSource newSource)
 		{
 			var imageElement = (VisualElement)bindable;
-			if (newSource != null)
-				newSource.Parent = imageElement;
+			newSource?.Parent = imageElement;
 			imageElement?.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 

@@ -168,24 +168,18 @@ namespace Microsoft.Maui.Graphics.Skia
 					_blurRadius = radius;
 					_blurFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, _blurRadius);
 
-					if (_fillPaint != null)
-						_fillPaint.MaskFilter = _blurFilter;
-					if (_strokePaint != null)
-						_strokePaint.MaskFilter = _blurFilter;
-					if (_fontPaint != null)
-						_fontPaint.MaskFilter = _blurFilter;
+					_fillPaint?.MaskFilter = _blurFilter;
+					_strokePaint?.MaskFilter = _blurFilter;
+					_fontPaint?.MaskFilter = _blurFilter;
 				}
 				else
 				{
 					_isBlurred = false;
 					_blurRadius = 0;
 
-					if (_fillPaint != null)
-						_fillPaint.MaskFilter = null;
-					if (_strokePaint != null)
-						_strokePaint.MaskFilter = null;
-					if (_fontPaint != null)
-						_fontPaint.MaskFilter = null;
+					_fillPaint?.MaskFilter = null;
+					_strokePaint?.MaskFilter = null;
+					_fontPaint?.MaskFilter = null;
 				}
 			}
 		}

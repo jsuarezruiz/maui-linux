@@ -1,5 +1,5 @@
-﻿using Gtk;
-using System;
+﻿using System;
+using Gtk;
 
 namespace Microsoft.Maui.Handlers
 {
